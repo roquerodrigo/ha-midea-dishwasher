@@ -19,7 +19,8 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 - **Local polling** over LAN V3 — no cloud calls once configured.
 - **Config flow** for host, port, device ID, token, key — with reauth and reconfigure flows.
 - **Options flow** with a configurable `scan_interval` (default 30 s, min 10 s).
-- **Entities**: power switch, door binary sensor, rinse-aid problem sensor, status / progress / time-remaining sensors.
+- **Entities**: power switch, door / extra-drying / rinse-aid binary sensors, status / progress / mode / time-remaining / error sensors, rinse-aid level number, and start-eco / start-intensive / cancel buttons.
+- **Service** `midea_dishwasher.start_cycle` (mode + extra-drying) for automations.
 - **Diagnostics platform** with credential redaction (`token`, `key`, `device_id`).
 - **Repairs platform** wired into HA's Issue Registry, with a sample `unreachable_device` issue.
 - **Translations** for English and Brazilian Portuguese (parity enforced by tests).
@@ -28,16 +29,23 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 
 ## Entities
 
-| Domain | Key | Source field |
-|---|---|---|
-| `switch` | `power` | `machine_state` (calls `power_on` / `power_off`) |
-| `binary_sensor` | `door` | `door_closed` (inverted; device class `door`) |
-| `binary_sensor` | `rinse_aid` | `bright_lack` (device class `problem`) |
-| `sensor` | `status` | `cycle_state` enum (`idle`, `order`, `work`, …) |
-| `sensor` | `progress` | `wash_stage` (0–5) |
-| `sensor` | `time_remaining` | `left_time` (minutes) |
+| Domain | Key | Source field | Notes |
+|---|---|---|---|
+| `switch` | `power` | `machine_state` | `power_on` / `power_off` |
+| `binary_sensor` | `door` | `door_closed` (inverted) | device class `door` |
+| `binary_sensor` | `extra_drying` | `extra_drying` | flag of the running cycle |
+| `binary_sensor` | `rinse_aid` | `bright_lack` | device class `problem`, diagnostic |
+| `sensor` | `status` | `cycle_state` | enum (`power_off`, `idle`, `order`, `work`, `error`, `soft_gear`) |
+| `sensor` | `progress` | `wash_stage` | enum (`idle`, `pre_wash`, `main_wash`, `rinse`, `dry`, `finish`) |
+| `sensor` | `mode` | `mode` | enum (14 programs: `auto`, `eco`, `intensive`, `90min`, `1hour`, `rapid`, …) |
+| `sensor` | `time_remaining` | `left_time` | duration, minutes |
+| `sensor` | `error` | `error_code` | enum (`none`, `water_supply`, `heating`, `overflow`, `water_valve`), diagnostic |
+| `number` | `bright` | `bright` | rinse-aid dosage 1–5 (slider) |
+| `button` | `start_eco` | — | starts ECO cycle |
+| `button` | `start_intensive` | — | starts Intensive cycle (extra-drying ON) |
+| `button` | `cancel` | — | cancels the running cycle |
 
-The set is bounded by what `midea-dishwasher-api` decodes from the device response. Mode, water-softener level, panel brightness and humidity are not currently exposed by the upstream library.
+For more flexible automations the integration also exposes the `midea_dishwasher.start_cycle` service, which accepts `mode` (any of the 14 programs above) and `extra_drying` (bool).
 
 ## Obtaining `token` and `key`
 
@@ -70,25 +78,26 @@ rm config/.storage/core.entity_registry config/.storage/core.device_registry
 
 ```
 custom_components/midea_dishwasher/
-├── __init__.py        # async_setup_entry / unload / reload
-├── api.py             # MideaDishwasherApiClient (executor-wrapped LAN client)
-├── binary_sensor.py   # door, rinse_aid
-├── config_flow.py     # user / reauth / reconfigure steps
-├── const.py           # DOMAIN, LOGGER, defaults, hex-length constants
-├── coordinator.py     # DataUpdateCoordinator polling the device
-├── data.py            # typed ConfigEntry + MideaDishwasherData dataclass + TypedDicts
-├── diagnostics.py     # downloadable diagnostics with credential redaction
-├── entity.py          # base CoordinatorEntity
-├── exceptions/        # one file per exception class
-│   ├── __init__.py
-│   ├── api_client_authentication_error.py
-│   ├── api_client_communication_error.py
-│   └── api_client_error.py
+├── __init__.py             # async_setup_entry / unload / reload
+├── api.py                  # MideaDishwasherApiClient (executor-wrapped LAN client)
+├── binary_sensor/          # door, extra_drying, rinse_aid (one class per file)
+├── brand/                  # icon/logo for HACS
+├── button/                 # cancel, start_eco, start_intensive
+├── config_flow.py          # user / reauth / reconfigure steps
+├── const.py                # DOMAIN, LOGGER, defaults, hex-length constants
+├── coordinator.py          # DataUpdateCoordinator polling the device
+├── data.py                 # typed ConfigEntry + MideaDishwasherData dataclass + TypedDicts
+├── diagnostics.py          # downloadable diagnostics with credential redaction
+├── entity.py               # base CoordinatorEntity
+├── exceptions/             # one file per exception class
 ├── manifest.json
-├── options_flow.py    # OptionsFlow with scan_interval
-├── repairs.py         # Repair platform: async_create_fix_flow + sample issue
-├── sensor.py          # status, progress, time_remaining
-├── switch.py          # power
+├── number.py               # rinse-aid level slider
+├── options_flow.py         # OptionsFlow with scan_interval
+├── repairs.py              # Repair platform: async_create_fix_flow + sample issue
+├── sensor/                 # status, progress, mode, time_remaining, error
+├── services.py             # midea_dishwasher.start_cycle
+├── services.yaml
+├── switch.py               # power
 └── translations/
     ├── en.json
     └── pt-BR.json

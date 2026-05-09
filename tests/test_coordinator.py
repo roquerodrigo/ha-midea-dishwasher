@@ -7,22 +7,20 @@ import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from custom_components.integration_blueprint.const import DOMAIN
-from custom_components.integration_blueprint.coordinator import (
-    IntegrationBlueprintDataUpdateCoordinator,
+from custom_components.midea_dishwasher.const import DOMAIN
+from custom_components.midea_dishwasher.coordinator import (
+    MideaDishwasherDataUpdateCoordinator,
 )
-from custom_components.integration_blueprint.exceptions import (
-    IntegrationBlueprintApiClientAuthenticationError,
-    IntegrationBlueprintApiClientError,
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientAuthenticationError,
+    MideaDishwasherApiClientError,
 )
 
 
 def _make_coordinator(hass, payload=None, scan_interval=timedelta(minutes=5)):
-    coord = IntegrationBlueprintDataUpdateCoordinator(
-        hass=hass, scan_interval=scan_interval
-    )
+    coord = MideaDishwasherDataUpdateCoordinator(hass=hass, scan_interval=scan_interval)
     client = AsyncMock()
-    client.async_get_data = AsyncMock(return_value=payload or {})
+    client.async_get_status = AsyncMock(return_value=payload or {})
     runtime_data = type("D", (), {"client": client})()
     entry = type("E", (), {"entry_id": "eid", "runtime_data": runtime_data})()
     coord.config_entry = entry
@@ -30,36 +28,36 @@ def _make_coordinator(hass, payload=None, scan_interval=timedelta(minutes=5)):
 
 
 def test_init_sets_domain_name(hass):
-    coord = IntegrationBlueprintDataUpdateCoordinator(
+    coord = MideaDishwasherDataUpdateCoordinator(
         hass=hass, scan_interval=timedelta(seconds=300)
     )
     assert coord.name == DOMAIN
 
 
 def test_init_sets_update_interval(hass):
-    coord = IntegrationBlueprintDataUpdateCoordinator(
+    coord = MideaDishwasherDataUpdateCoordinator(
         hass=hass, scan_interval=timedelta(seconds=42)
     )
     assert coord.update_interval == timedelta(seconds=42)
 
 
-async def test_update_data_returns_payload(hass, sample_payload):
-    coord, _ = _make_coordinator(hass, payload=sample_payload)
+async def test_update_data_returns_payload(hass, sample_status):
+    coord, _ = _make_coordinator(hass, payload=sample_status)
     result = await coord._async_update_data()
-    assert result == sample_payload
+    assert result == sample_status
 
 
 async def test_update_data_raises_update_failed_on_api_error(hass):
     coord, client = _make_coordinator(hass)
-    client.async_get_data.side_effect = IntegrationBlueprintApiClientError("down")
+    client.async_get_status.side_effect = MideaDishwasherApiClientError("down")
     with pytest.raises(UpdateFailed):
         await coord._async_update_data()
 
 
 async def test_update_data_raises_auth_failed_on_auth_error(hass):
     coord, client = _make_coordinator(hass)
-    client.async_get_data.side_effect = (
-        IntegrationBlueprintApiClientAuthenticationError("nope")
+    client.async_get_status.side_effect = MideaDishwasherApiClientAuthenticationError(
+        "nope"
     )
     with pytest.raises(ConfigEntryAuthFailed):
         await coord._async_update_data()

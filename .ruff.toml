@@ -25,6 +25,11 @@ keep-runtime-typing = true
 max-complexity = 25
 
 [lint.per-file-ignores]
+# Entity sub-packages need to import from the parent integration package
+# (entity, data) — same-package relatives are not enough.
+"custom_components/*/sensor/*.py" = ["TID252"]
+"custom_components/*/binary_sensor/*.py" = ["TID252"]
+"custom_components/*/button/*.py" = ["TID252"]
 "tests/**" = [
     "S101",    # assert is normal in pytest
     "S105",    # hardcoded-password-string is fine for fake test credentials

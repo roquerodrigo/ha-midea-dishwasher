@@ -1,0 +1,31 @@
+start_cycle:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: midea_dishwasher
+    mode:
+      required: true
+      selector:
+        select:
+          translation_key: mode
+          options:
+            - "auto"
+            - "intensive"
+            - "normal"
+            - "eco"
+            - "glass"
+            - "90min"
+            - "1hour"
+            - "rapid"
+            - "soak"
+            - "3in1"
+            - "hygiene"
+            - "quiet"
+            - "party"
+            - "fruit"
+    extra_drying:
+      default: false
+      selector:
+        boolean:

@@ -1,143 +1,267 @@
 from __future__ import annotations
 
-import socket
-from unittest.mock import AsyncMock, MagicMock
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
-import aiohttp
 import pytest
 
-from custom_components.integration_blueprint.api import (
-    IntegrationBlueprintApiClient,
-    _verify_response_or_raise,
+from custom_components.midea_dishwasher.api import (
+    MideaDishwasherApiClient,
+    _to_status_data,
 )
-from custom_components.integration_blueprint.exceptions import (
-    IntegrationBlueprintApiClientAuthenticationError,
-    IntegrationBlueprintApiClientCommunicationError,
-    IntegrationBlueprintApiClientError,
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientAuthenticationError,
+    MideaDishwasherApiClientCommunicationError,
+    MideaDishwasherApiClientError,
 )
 
 
-def _make_session(payload=None, side_effect=None, status=200):
-    response = AsyncMock()
-    response.status = status
-    response.raise_for_status = MagicMock()
-    response.json = AsyncMock(return_value=payload or {})
-    session = MagicMock()
-    if side_effect is not None:
-        session.request = AsyncMock(side_effect=side_effect)
-    else:
-        session.request = AsyncMock(return_value=response)
-    return session, response
+def _client(hass) -> MideaDishwasherApiClient:
+    return MideaDishwasherApiClient(
+        hass=hass,
+        host="1.2.3.4",
+        port=6444,
+        device_id=42,
+        token=b"\x00" * 64,
+        key=b"\x00" * 32,
+    )
 
 
-def _client(session) -> IntegrationBlueprintApiClient:
-    return IntegrationBlueprintApiClient(username="u", password="p", session=session)
+def _patch_transport(transport_factory):
+    return patch(
+        "custom_components.midea_dishwasher.api.V3Transport",
+        transport_factory,
+    )
+
+
+def _patch_client(client_factory):
+    return patch(
+        "custom_components.midea_dishwasher.api.Client",
+        client_factory,
+    )
+
+
+class _FakeTransport:
+    def __init__(self, *args, **kwargs) -> None:
+        self.args = args
+        self.kwargs = kwargs
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc) -> None:
+        return None
+
+
+def _fake_status() -> SimpleNamespace:
+    return SimpleNamespace(
+        machine_state="power_on",
+        cycle_state="work",
+        mode="eco",
+        extra_drying=True,
+        wash_stage=2,
+        error_code=0,
+        left_time=42,
+        door_closed=True,
+        bright_lack=False,
+        bright=3,
+    )
 
 
 def test_communication_error_is_api_error():
     assert issubclass(
-        IntegrationBlueprintApiClientCommunicationError,
-        IntegrationBlueprintApiClientError,
+        MideaDishwasherApiClientCommunicationError,
+        MideaDishwasherApiClientError,
     )
 
 
 def test_auth_error_is_api_error():
     assert issubclass(
-        IntegrationBlueprintApiClientAuthenticationError,
-        IntegrationBlueprintApiClientError,
+        MideaDishwasherApiClientAuthenticationError,
+        MideaDishwasherApiClientError,
     )
 
 
 def test_api_error_is_exception():
-    assert issubclass(IntegrationBlueprintApiClientError, Exception)
+    assert issubclass(MideaDishwasherApiClientError, Exception)
 
 
-def test_verify_response_calls_raise_for_status():
-    response = MagicMock()
-    response.status = 200
-    _verify_response_or_raise(response)
-    response.raise_for_status.assert_called_once()
+def test_to_status_data_maps_all_fields():
+    result = _to_status_data(_fake_status())
+    assert result == {
+        "machine_state": "power_on",
+        "cycle_state": "work",
+        "mode": "eco",
+        "extra_drying": True,
+        "wash_stage": 2,
+        "error_code": 0,
+        "left_time": 42,
+        "door_closed": True,
+        "bright_lack": False,
+        "bright": 3,
+    }
 
 
-@pytest.mark.parametrize("status", [401, 403])
-def test_verify_response_raises_auth_on_401_403(status):
-    response = MagicMock()
-    response.status = status
-    with pytest.raises(IntegrationBlueprintApiClientAuthenticationError):
-        _verify_response_or_raise(response)
+def test_to_status_data_handles_none_bright():
+    status = _fake_status()
+    status.bright = None
+    assert _to_status_data(status)["bright"] is None
 
 
-def test_verify_response_propagates_http_error():
-    response = MagicMock()
-    response.status = 500
-    response.raise_for_status.side_effect = aiohttp.ClientResponseError(
-        request_info=MagicMock(), history=()
-    )
-    with pytest.raises(aiohttp.ClientResponseError):
-        _verify_response_or_raise(response)
+def test_to_status_data_handles_none_mode():
+    status = _fake_status()
+    status.mode = None
+    assert _to_status_data(status)["mode"] is None
 
 
-async def test_async_get_data_returns_payload(sample_payload):
-    session, _ = _make_session(sample_payload)
-    result = await _client(session).async_get_data()
-    assert result == sample_payload
+def test_to_status_data_handles_int_mode_passthrough():
+    status = _fake_status()
+    status.mode = 0x10  # an unknown program byte
+    assert _to_status_data(status)["mode"] is None
 
 
-async def test_async_get_data_uses_correct_url():
-    from custom_components.integration_blueprint.const import API_BASE_URL
-
-    session, _ = _make_session({})
-    await _client(session).async_get_data()
-    assert session.request.call_args.kwargs["url"] == f"{API_BASE_URL}/posts/1"
-    assert session.request.call_args.kwargs["method"] == "get"
+def test_to_status_data_handles_none_machine_state():
+    status = _fake_status()
+    status.machine_state = None
+    assert _to_status_data(status)["machine_state"] is None
 
 
-async def test_async_set_title_sends_patch():
-    session, _ = _make_session({})
-    await _client(session).async_set_title("hello")
-    assert session.request.call_args.kwargs["method"] == "patch"
-    assert session.request.call_args.kwargs["json"] == {"title": "hello"}
+def test_to_status_data_handles_none_cycle_state():
+    status = _fake_status()
+    status.cycle_state = None
+    assert _to_status_data(status)["cycle_state"] is None
 
 
-async def test_api_wrapper_timeout_raises_communication_error():
-    session, _ = _make_session(side_effect=TimeoutError("timed out"))
-    with pytest.raises(
-        IntegrationBlueprintApiClientCommunicationError, match="Timeout"
+def test_to_status_data_handles_none_wash_stage():
+    status = _fake_status()
+    status.wash_stage = None
+    assert _to_status_data(status)["wash_stage"] is None
+
+
+async def test_get_status_returns_typed_dict(hass):
+    fake_client = MagicMock()
+    fake_client.query_status = MagicMock(return_value=_fake_status())
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
     ):
-        await _client(session)._api_wrapper(method="get", url="http://x")
+        result = await _client(hass).async_get_status()
+    assert result["machine_state"] == "power_on"
+    assert result["left_time"] == 42
 
 
-async def test_api_wrapper_client_error_raises_communication_error():
-    session, _ = _make_session(side_effect=aiohttp.ClientError("refused"))
-    with pytest.raises(
-        IntegrationBlueprintApiClientCommunicationError, match="Error fetching"
+async def test_power_on_calls_library(hass):
+    fake_client = MagicMock()
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
     ):
-        await _client(session)._api_wrapper(method="get", url="http://x")
+        await _client(hass).async_power_on()
+    fake_client.power_on.assert_called_once()
 
 
-async def test_api_wrapper_socket_error_raises_communication_error():
-    session, _ = _make_session(side_effect=socket.gaierror("dns"))
-    with pytest.raises(
-        IntegrationBlueprintApiClientCommunicationError, match="Error fetching"
+async def test_power_off_calls_library(hass):
+    fake_client = MagicMock()
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
     ):
-        await _client(session)._api_wrapper(method="get", url="http://x")
+        await _client(hass).async_power_off()
+    fake_client.power_off.assert_called_once()
 
 
-async def test_api_wrapper_unexpected_exception_raises_api_error():
-    session, _ = _make_session(side_effect=RuntimeError("boom"))
-    with pytest.raises(
-        IntegrationBlueprintApiClientError, match="Something really wrong"
+async def test_v3_error_maps_to_auth_error(hass):
+    from midea_dishwasher_api.security import V3Error
+
+    fake_client = MagicMock()
+    fake_client.query_status = MagicMock(side_effect=V3Error("bad key"))
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+        pytest.raises(MideaDishwasherApiClientAuthenticationError),
     ):
-        await _client(session)._api_wrapper(method="get", url="http://x")
+        await _client(hass).async_get_status()
 
 
-async def test_api_wrapper_auth_status_raises_auth_error():
-    session, _ = _make_session(status=401)
-    with pytest.raises(IntegrationBlueprintApiClientAuthenticationError):
-        await _client(session)._api_wrapper(method="get", url="http://x")
+async def test_frame_error_maps_to_api_error(hass):
+    from midea_dishwasher_api.protocol import FrameError
+
+    fake_client = MagicMock()
+    fake_client.query_status = MagicMock(side_effect=FrameError("bad frame"))
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+        pytest.raises(MideaDishwasherApiClientError) as exc_info,
+    ):
+        await _client(hass).async_get_status()
+    assert not isinstance(exc_info.value, MideaDishwasherApiClientCommunicationError)
+    assert not isinstance(exc_info.value, MideaDishwasherApiClientAuthenticationError)
 
 
-async def test_api_wrapper_returns_json_on_success(sample_payload):
-    session, _ = _make_session(sample_payload)
-    result = await _client(session)._api_wrapper(method="get", url="http://x")
-    assert result == sample_payload
+async def test_os_error_maps_to_communication_error(hass):
+    fake_client = MagicMock()
+    fake_client.query_status = MagicMock(side_effect=OSError("refused"))
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+        pytest.raises(MideaDishwasherApiClientCommunicationError),
+    ):
+        await _client(hass).async_get_status()
+
+
+async def test_power_on_propagates_v3_error(hass):
+    from midea_dishwasher_api.security import V3Error
+
+    fake_client = MagicMock()
+    fake_client.power_on = MagicMock(side_effect=V3Error("nope"))
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+        pytest.raises(MideaDishwasherApiClientAuthenticationError),
+    ):
+        await _client(hass).async_power_on()
+
+
+async def test_cancel_work_calls_library(hass):
+    fake_client = MagicMock()
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+    ):
+        await _client(hass).async_cancel_work()
+    fake_client.cancel_work.assert_called_once()
+
+
+async def test_set_bright_calls_library_with_enum(hass):
+    fake_client = MagicMock()
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+    ):
+        await _client(hass).async_set_bright(3)
+    fake_client.set_bright.assert_called_once()
+    bright = fake_client.set_bright.call_args.args[0]
+    assert int(bright) == 3
+
+
+async def test_set_bright_rejects_out_of_range(hass):
+    with pytest.raises(ValueError, match="not a valid"):
+        await _client(hass).async_set_bright(99)
+
+
+async def test_start_cycle_calls_library(hass):
+    fake_client = MagicMock()
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+    ):
+        await _client(hass).async_start_cycle("eco", extra_drying=True)
+    fake_client.start_to_work.assert_called_once()
+    kwargs = fake_client.start_to_work.call_args.kwargs
+    assert str(kwargs["mode"]) == "eco"
+    assert kwargs["extra_drying"] is True
+
+
+async def test_start_cycle_rejects_unknown_mode(hass):
+    with pytest.raises(ValueError, match="not a valid"):
+        await _client(hass).async_start_cycle("not-a-real-mode")

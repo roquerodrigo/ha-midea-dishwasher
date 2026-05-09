@@ -8,7 +8,7 @@ import pytest
 TRANSLATIONS_DIR = (
     Path(__file__).parent.parent
     / "custom_components"
-    / "integration_blueprint"
+    / "midea_dishwasher"
     / "translations"
 )
 

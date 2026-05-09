@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.integration_blueprint.const import ATTRIBUTION, DOMAIN
-from custom_components.integration_blueprint.entity import IntegrationBlueprintEntity
+from custom_components.midea_dishwasher.const import ATTRIBUTION, DOMAIN
+from custom_components.midea_dishwasher.entity import MideaDishwasherEntity
 
 
-def _make_entity(entry_id="test_entry_id") -> IntegrationBlueprintEntity:
+def _make_entity(entry_id="test_entry_id") -> MideaDishwasherEntity:
     coordinator = MagicMock()
     coordinator.config_entry.entry_id = entry_id
-    return IntegrationBlueprintEntity(coordinator=coordinator)
+    return MideaDishwasherEntity(coordinator=coordinator)
 
 
 def test_attribution():
@@ -20,12 +20,12 @@ def test_has_entity_name():
     assert _make_entity()._attr_has_entity_name is True
 
 
-def test_device_info_name():
-    assert _make_entity().device_info["name"] == "Integration Blueprint"
+def test_device_info_translation_key():
+    assert _make_entity().device_info["translation_key"] == "dishwasher"
 
 
 def test_device_info_manufacturer():
-    assert _make_entity().device_info["manufacturer"] == "Integration Blueprint"
+    assert _make_entity().device_info["manufacturer"] == "Midea"
 
 
 def test_device_info_identifiers_contain_domain():
@@ -41,4 +41,4 @@ def test_device_info_identifiers_contain_entry_id():
 def test_coordinator_stored():
     coord = MagicMock()
     coord.config_entry.entry_id = "eid"
-    assert IntegrationBlueprintEntity(coordinator=coord).coordinator is coord
+    assert MideaDishwasherEntity(coordinator=coord).coordinator is coord

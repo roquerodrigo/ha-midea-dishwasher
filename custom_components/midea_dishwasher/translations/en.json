@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Set up dishwasher",
+                "description": "Enter the LAN credentials for your dishwasher.",
+                "data": {
+                    "host": "IP address",
+                    "port": "Port",
+                    "device_id": "Device ID",
+                    "token": "Token (hex)",
+                    "key": "Key (hex)"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Re-authenticate dishwasher",
+                "description": "Your credentials are no longer valid. Enter the updated values.",
+                "data": {
+                    "host": "IP address",
+                    "port": "Port",
+                    "device_id": "Device ID",
+                    "token": "Token (hex)",
+                    "key": "Key (hex)"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure dishwasher",
+                "description": "Update the LAN credentials for this entry.",
+                "data": {
+                    "host": "IP address",
+                    "port": "Port",
+                    "device_id": "Device ID",
+                    "token": "Token (hex)",
+                    "key": "Key (hex)"
+                }
+            }
+        },
+        "error": {
+            "auth": "The dishwasher rejected the token/key.",
+            "connection": "Unable to reach the dishwasher on the network.",
+            "invalid_credentials": "Token must be 128 hex chars and key 64 hex chars.",
+            "unknown": "Unknown error occurred."
+        },
+        "abort": {
+            "already_configured": "This dishwasher is already configured.",
+            "reauth_successful": "Re-authentication was successful.",
+            "reconfigure_successful": "Reconfiguration was successful."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Options",
+                "description": "Tune polling and other behaviour for this entry.",
+                "data": {
+                    "scan_interval": "Polling interval (seconds)"
+                }
+            }
+        }
+    },
+    "issues": {
+        "unreachable_device": {
+            "title": "Dishwasher is unreachable",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Check your dishwasher",
+                        "description": "The dishwasher could not be reached on the LAN. Make sure it is powered on, on the same network, and that the IP address has not changed."
+                    }
+                }
+            }
+        }
+    },
+    "device": {
+        "dishwasher": {
+            "name": "Dishwasher"
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "door": {
+                "name": "Door"
+            },
+            "extra_drying": {
+                "name": "Extra drying"
+            },
+            "rinse_aid": {
+                "name": "Rinse aid"
+            }
+        },
+        "button": {
+            "cancel": {
+                "name": "Cancel cycle"
+            },
+            "start_eco": {
+                "name": "Start ECO cycle"
+            },
+            "start_intensive": {
+                "name": "Start intensive cycle"
+            }
+        },
+        "number": {
+            "bright": {
+                "name": "Rinse-aid level"
+            }
+        },
+        "sensor": {
+            "status": {
+                "name": "Status",
+                "state": {
+                    "power_off": "Power off",
+                    "idle": "Idle",
+                    "order": "Scheduled",
+                    "work": "Running",
+                    "error": "Error",
+                    "soft_gear": "Soft gear"
+                }
+            },
+            "mode": {
+                "name": "Program",
+                "state": {
+                    "auto": "Auto",
+                    "intensive": "Intensive",
+                    "normal": "Normal",
+                    "eco": "ECO",
+                    "glass": "Glassware",
+                    "90min": "90 minutes",
+                    "1hour": "1 hour",
+                    "rapid": "Rapid",
+                    "soak": "Pre-rinse",
+                    "3in1": "3-in-1",
+                    "hygiene": "Hygiene",
+                    "quiet": "Quiet",
+                    "party": "Party",
+                    "fruit": "Fruits"
+                }
+            },
+            "progress": {
+                "name": "Progress",
+                "state": {
+                    "idle": "Idle",
+                    "pre_wash": "Pre-wash",
+                    "main_wash": "Main wash",
+                    "rinse": "Rinse",
+                    "dry": "Dry",
+                    "finish": "Finish"
+                }
+            },
+            "time_remaining": {
+                "name": "Time remaining"
+            },
+            "error": {
+                "name": "Error code",
+                "state": {
+                    "none": "None",
+                    "water_supply": "Water supply",
+                    "heating": "Heating",
+                    "overflow": "Overflow",
+                    "water_valve": "Water valve"
+                }
+            }
+        },
+        "switch": {
+            "power": {
+                "name": "Power"
+            }
+        }
+    },
+    "selector": {
+        "mode": {
+            "options": {
+                "auto": "Auto",
+                "intensive": "Intensive",
+                "normal": "Normal",
+                "eco": "ECO",
+                "glass": "Glassware",
+                "90min": "90 minutes",
+                "1hour": "1 hour",
+                "rapid": "Rapid",
+                "soak": "Pre-rinse",
+                "3in1": "3-in-1",
+                "hygiene": "Hygiene",
+                "quiet": "Quiet",
+                "party": "Party",
+                "fruit": "Fruits"
+            }
+        }
+    },
+    "services": {
+        "start_cycle": {
+            "name": "Start cycle",
+            "description": "Start a wash cycle on the dishwasher.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Dishwasher",
+                    "description": "Which dishwasher entry to control."
+                },
+                "mode": {
+                    "name": "Mode",
+                    "description": "Wash program to run."
+                },
+                "extra_drying": {
+                    "name": "Extra drying",
+                    "description": "Add the extra-drying step at the end of the cycle."
+                }
+            }
+        }
+    }
+}

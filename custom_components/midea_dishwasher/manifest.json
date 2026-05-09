@@ -1,0 +1,15 @@
+{
+  "domain": "midea_dishwasher",
+  "name": "Midea Dishwasher",
+  "codeowners": [
+    "@roquerodrigo"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/roquerodrigo/ha-midea-dishwasher",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/roquerodrigo/ha-midea-dishwasher/issues",
+  "requirements": [
+    "midea-dishwasher-api==1.3.0"
+  ],
+  "version": "0.1.0"
+}

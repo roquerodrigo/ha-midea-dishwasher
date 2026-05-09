@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurar lava-louças",
+                "description": "Informe as credenciais LAN da sua lava-louças.",
+                "data": {
+                    "host": "Endereço IP",
+                    "port": "Porta",
+                    "device_id": "ID do dispositivo",
+                    "token": "Token (hex)",
+                    "key": "Chave (hex)"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Re-autenticar lava-louças",
+                "description": "Suas credenciais não são mais válidas. Informe os valores atualizados.",
+                "data": {
+                    "host": "Endereço IP",
+                    "port": "Porta",
+                    "device_id": "ID do dispositivo",
+                    "token": "Token (hex)",
+                    "key": "Chave (hex)"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigurar lava-louças",
+                "description": "Atualize as credenciais LAN desta entrada.",
+                "data": {
+                    "host": "Endereço IP",
+                    "port": "Porta",
+                    "device_id": "ID do dispositivo",
+                    "token": "Token (hex)",
+                    "key": "Chave (hex)"
+                }
+            }
+        },
+        "error": {
+            "auth": "A lava-louças rejeitou o token/chave.",
+            "connection": "Não foi possível alcançar a lava-louças na rede.",
+            "invalid_credentials": "Token deve ter 128 caracteres hex e chave 64 caracteres hex.",
+            "unknown": "Ocorreu um erro desconhecido."
+        },
+        "abort": {
+            "already_configured": "Esta lava-louças já está configurada.",
+            "reauth_successful": "Re-autenticação concluída com sucesso.",
+            "reconfigure_successful": "Reconfiguração concluída com sucesso."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opções",
+                "description": "Ajuste polling e outros comportamentos desta entrada.",
+                "data": {
+                    "scan_interval": "Intervalo de polling (segundos)"
+                }
+            }
+        }
+    },
+    "issues": {
+        "unreachable_device": {
+            "title": "Lava-louças inacessível",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Verifique sua lava-louças",
+                        "description": "Não foi possível alcançar a lava-louças na rede LAN. Confirme que ela está ligada, na mesma rede e que o IP não mudou."
+                    }
+                }
+            }
+        }
+    },
+    "device": {
+        "dishwasher": {
+            "name": "Lava-louças"
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "door": {
+                "name": "Porta"
+            },
+            "extra_drying": {
+                "name": "Secagem extra"
+            },
+            "rinse_aid": {
+                "name": "Abrilhantador"
+            }
+        },
+        "button": {
+            "cancel": {
+                "name": "Cancelar ciclo"
+            },
+            "start_eco": {
+                "name": "Iniciar ciclo ECO"
+            },
+            "start_intensive": {
+                "name": "Iniciar ciclo intensivo"
+            }
+        },
+        "number": {
+            "bright": {
+                "name": "Nível do abrilhantador"
+            }
+        },
+        "sensor": {
+            "status": {
+                "name": "Estado",
+                "state": {
+                    "power_off": "Desligado",
+                    "idle": "Parado",
+                    "order": "Agendado",
+                    "work": "Em execução",
+                    "error": "Erro",
+                    "soft_gear": "Modo suave"
+                }
+            },
+            "mode": {
+                "name": "Programa",
+                "state": {
+                    "auto": "Automático",
+                    "intensive": "Intensivo",
+                    "normal": "Normal",
+                    "eco": "ECO",
+                    "glass": "Vidros",
+                    "90min": "90 minutos",
+                    "1hour": "1 hora",
+                    "rapid": "Rápido",
+                    "soak": "Pré-lavagem",
+                    "3in1": "3 em 1",
+                    "hygiene": "Higiene",
+                    "quiet": "Silencioso",
+                    "party": "Festa",
+                    "fruit": "Frutas"
+                }
+            },
+            "progress": {
+                "name": "Progresso",
+                "state": {
+                    "idle": "Parado",
+                    "pre_wash": "Pré-lavagem",
+                    "main_wash": "Lavagem principal",
+                    "rinse": "Enxágue",
+                    "dry": "Secagem",
+                    "finish": "Concluído"
+                }
+            },
+            "time_remaining": {
+                "name": "Tempo restante"
+            },
+            "error": {
+                "name": "Código de falha",
+                "state": {
+                    "none": "Nenhuma",
+                    "water_supply": "Entrada de água",
+                    "heating": "Aquecimento",
+                    "overflow": "Transbordamento",
+                    "water_valve": "Válvula de água"
+                }
+            }
+        },
+        "switch": {
+            "power": {
+                "name": "Energia"
+            }
+        }
+    },
+    "selector": {
+        "mode": {
+            "options": {
+                "auto": "Automático",
+                "intensive": "Intensivo",
+                "normal": "Normal",
+                "eco": "ECO",
+                "glass": "Vidros",
+                "90min": "90 minutos",
+                "1hour": "1 hora",
+                "rapid": "Rápido",
+                "soak": "Pré-lavagem",
+                "3in1": "3 em 1",
+                "hygiene": "Higiene",
+                "quiet": "Silencioso",
+                "party": "Festa",
+                "fruit": "Frutas"
+            }
+        }
+    },
+    "services": {
+        "start_cycle": {
+            "name": "Iniciar ciclo",
+            "description": "Inicia um ciclo de lavagem na lava-louças.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Lava-louças",
+                    "description": "Qual entrada de lava-louças controlar."
+                },
+                "mode": {
+                    "name": "Programa",
+                    "description": "Programa de lavagem a executar."
+                },
+                "extra_drying": {
+                    "name": "Secagem extra",
+                    "description": "Adicionar etapa de secagem extra ao final do ciclo."
+                }
+            }
+        }
+    }
+}

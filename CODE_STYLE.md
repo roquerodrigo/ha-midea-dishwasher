@@ -1,6 +1,6 @@
 # Code Style Guide
 
-Style conventions for the `ha-integration-blueprint` project. Run `scripts/lint`
+Style conventions for the `ha-midea-dishwasher` project. Run `scripts/lint`
 before committing — it executes `ruff format`, `ruff check --fix` and `mypy`,
 and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
 
@@ -12,17 +12,35 @@ and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
   variable names, dictionary keys, identifier strings.
 - The conversation language with the user can be Portuguese or anything else;
   what is committed to disk stays English.
-- User-facing strings live in `custom_components/integration_blueprint/translations/{en,pt-BR}.json`
+- User-facing strings live in `custom_components/midea_dishwasher/translations/{en,pt-BR}.json`
   only — do not hardcode them in Python.
 
 ## File organization
 
 - **One top-level class per file.** Multiple semantically related classes (e.g.
-  exception families) get grouped into a package directory with one class per
-  submodule and an `__init__.py` re-exporting the public symbols.
+  exception families, entity classes for one platform) get grouped into a
+  package directory with one class per submodule and an `__init__.py`
+  re-exporting the public symbols.
   - Example: `exceptions/` contains `api_client_error.py`,
     `api_client_communication_error.py`,
     `api_client_authentication_error.py`, plus `__init__.py`.
+  - Example: `sensor/` contains `status_sensor.py`, `progress_sensor.py`,
+    `time_remaining_sensor.py`, `error_sensor.py`, plus `__init__.py`. Same
+    pattern for `binary_sensor/` and `button/`.
+
+- **One class per entity.** Every entity gets its own dedicated class — never
+  share a generic class parameterized by an `EntityDescription` subclass with
+  callable fields like `value_fn` or `action_fn`. Encode the entity's behaviour
+  directly in its class via `@property` and class-level `_attr_*` constants
+  (or a plain `EntityDescription` instance assigned at the class level). The
+  reason: each entity is a discrete contract; mixing them through a generic
+  class hides the contract behind indirection and discourages per-entity
+  refinement (icons, attributes, custom logic).
+  - Don't write a `MideaDishwasher<Platform>Description` subclass with a
+    `value_fn`/`action_fn` field.
+  - Do write `MideaDishwasher<Name><Platform>` (e.g.
+    `MideaDishwasherStatusSensor`, `MideaDishwasherCancelButton`,
+    `MideaDishwasherDoorBinarySensor`).
 - **TypedDicts and `type` aliases do not count as "classes"** for this rule —
   they live alongside related code (typically in `data.py`) and do not need
   their own file.
@@ -33,10 +51,10 @@ and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
 
 ## Naming
 
-- Public classes are prefixed with `IntegrationBlueprint` (rename to
-  `<YourDomain>` when forking).
-- Concrete platform entities end with the entity type: `IntegrationBlueprintSensor`.
-- Exception classes end with `Error`: `IntegrationBlueprintApiClientError`,
+- Public classes are prefixed with `MideaDishwasher`.
+- Concrete platform entities end with the entity type: `MideaDishwasherSensor`,
+  `MideaDishwasherBinarySensor`, `MideaDishwasherPowerSwitch`.
+- Exception classes end with `Error`: `MideaDishwasherApiClientError`,
   `…CommunicationError`, `…AuthenticationError`.
 - Private attributes / functions are prefixed with `_`.
 
@@ -50,9 +68,9 @@ Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 Required:
 
 - `TypedDict` for known dict / JSON shapes (see `data.py` for the canonical
-  examples: `IntegrationBlueprintPost`, `IntegrationBlueprintConfigData`,
-  `IntegrationBlueprintOptionsData`, `IntegrationBlueprintDiagnosticsPayload`).
-- `@dataclass` for structured records (`IntegrationBlueprintData`).
+  examples: `MideaDishwasherStatusData`, `MideaDishwasherConfigData`,
+  `MideaDishwasherOptionsData`, `MideaDishwasherDiagnosticsPayload`).
+- `@dataclass` for structured records (`MideaDishwasherData`).
 - Named `type` aliases for recursive / shared shapes — `JsonPrimitive`,
   `JsonValue`, `JsonObject` in `data.py`.
 - `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
@@ -89,7 +107,7 @@ with a one-line comment explaining the deliberate narrowing — see
 
   if TYPE_CHECKING:
       from collections.abc import Mapping
-      from .data import IntegrationBlueprintConfigData
+      from .data import MideaDishwasherConfigData
   ```
 
 - `noqa` comments are reserved for unavoidable framework constraints (e.g.
@@ -118,25 +136,25 @@ with a one-line comment explaining the deliberate narrowing — see
 
 ## Coordinator and runtime data
 
-- All API state flows through `entry.runtime_data: IntegrationBlueprintData`
+- All API state flows through `entry.runtime_data: MideaDishwasherData`
   (`data.py`). Never store integration state in `hass.data`.
-- The coordinator is typed as `DataUpdateCoordinator[IntegrationBlueprintPost]`
-  (or whatever your real payload TypedDict is). `_async_update_data` returns
-  the typed payload; client errors map to `UpdateFailed`,
-  authentication errors to `ConfigEntryAuthFailed` (which triggers reauth).
+- The coordinator is typed as `DataUpdateCoordinator[MideaDishwasherStatusData]`.
+  `_async_update_data` returns the typed payload; client errors map to
+  `UpdateFailed`, authentication errors to `ConfigEntryAuthFailed` (which
+  triggers reauth).
 
 ## Config / options / repairs / diagnostics
 
 - `config_flow.py` carries `user`, `reauth`, `reauth_confirm` and `reconfigure`
   steps, all sharing one `_validate` helper and one `_credentials_schema`
   builder.
-- `options_flow.py` holds the single `IntegrationBlueprintOptionsFlow`
-  class. New options keys go into the `IntegrationBlueprintOptionsData`
+- `options_flow.py` holds the single `MideaDishwasherOptionsFlow`
+  class. New options keys go into the `MideaDishwasherOptionsData`
   TypedDict in `data.py`.
 - `repairs.py` exposes `async_create_fix_flow`. Sample helpers like
   `async_raise_deprecated_api_issue` show how to register issues from anywhere
   in the integration.
-- `diagnostics.py` returns `IntegrationBlueprintDiagnosticsPayload`. Sensitive
+- `diagnostics.py` returns `MideaDishwasherDiagnosticsPayload`. Sensitive
   keys go into the `TO_REDACT: frozenset[str]` constant.
 
 ## Translations

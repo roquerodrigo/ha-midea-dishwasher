@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.0...v1.0.1) (2026-05-12)
+
+
+### Documentation
+
+* standardize CODE_STYLE.md template ([cabfb5f](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/cabfb5f6e603677954c87d8dd4a708e98a082eac))
+* standardize CODE_STYLE.md template ([e8d64fd](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/e8d64fd16de09fbb3fb1576e1059c5a6749c6a49))
+
 ## [1.0.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v0.1.0...v1.0.0) (2026-05-09)
 
 

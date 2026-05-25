@@ -1,9 +1,6 @@
 # Midea Dishwasher for Home Assistant
 
-[![HACS Validate](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/validate.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/validate.yml)
-[![Lint](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/lint.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/codeql.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/codeql.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
 Home Assistant integration for **Midea dishwashers** (`device_type 0xE1`, plugin v5), talking to the appliance directly over the LAN — no cloud round-trips at runtime. Built on top of [`midea-dishwasher-api`](https://pypi.org/project/midea-dishwasher-api/), which implements the `AA … E1` application protocol and the LAN V3 transport (handshake 8370 + AES-128-CBC + SHA-256).

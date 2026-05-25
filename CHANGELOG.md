@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.1...v1.0.2) (2026-05-25)
+
+
+### Documentation
+
+* fix CI badge and drop license badge ([e6c905c](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/e6c905cc4d9010f053f60bc76f46b6c9765a91d8))
+* fix CI badge and drop license badge ([d5a097b](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/d5a097b8de194c1a57b91d652104f864b9674189))
+
 ## [1.0.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.0...v1.0.1) (2026-05-22)
 
 

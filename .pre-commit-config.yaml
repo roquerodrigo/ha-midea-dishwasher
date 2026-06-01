@@ -1,5 +1,5 @@
 # Run with: pre-commit install (after scripts/setup)
-# CI mirrors these checks via .github/workflows/lint.yml
+# CI mirrors these checks via .github/workflows/ci.yml
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.12

@@ -18,13 +18,13 @@ This file deliberately avoids restating those rules — it only adds:
 **After every code change, always run lint then tests, in that order, before declaring the task done:**
 
 ```bash
-scripts/lint && pytest
+uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/midea_dishwasher && uv run pytest
 ```
 
-- `scripts/lint` runs `ruff format`, `ruff check --fix` and `mypy` (`mypy.ini`). Fix any failure and re-run before moving on.
-- `pytest` enforces a **95 % coverage gate** (`pytest.ini`).
+- The lint commands run `ruff format`, `ruff check --fix` and `mypy` (config in `pyproject.toml`). Fix any failure and re-run before moving on.
+- `pytest` enforces a **95 % coverage gate** (config in `pyproject.toml`).
 
-Both gates mirror CI (`.github/workflows/lint.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
+Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
 
 ## Architecture
 

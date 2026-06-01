@@ -22,7 +22,7 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 - **Repairs platform** wired into HA's Issue Registry, with a sample `unreachable_device` issue.
 - **Translations** for English and Brazilian Portuguese (parity enforced by tests).
 - **CI**: ruff lint + format, mypy type-check, `hassfest`, HACS validation, CodeQL.
-- **Coverage gate** at 95 % enforced by `pyproject.toml` (currently at 100 %).
+- **Coverage gate** at 90 % enforced by `pyproject.toml` (currently at 100 %).
 
 ## Entities
 
@@ -62,7 +62,7 @@ scripts/develop    # start Home Assistant in debug mode with the integration loa
 uv run ruff format .                              # format
 uv run ruff check . --fix                         # lint (autofix)
 uv run mypy custom_components/midea_dishwasher     # type-check
-uv run pytest      # run tests with the 95 % coverage gate
+uv run pytest      # run tests with the 90 % coverage gate
 ```
 
 Each script auto-detects `./.venv` and prepends it to `PATH` — no `source .venv/bin/activate` needed. For ad-hoc commands the same trick works: `.venv/bin/pytest`, `.venv/bin/ruff …`.

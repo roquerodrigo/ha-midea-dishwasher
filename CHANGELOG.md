@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.2...v1.0.3) (2026-07-20)
+
+
+### Documentation
+
+* update CLAUDE.md ([6367eb3](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/6367eb3c9f8b140023388049490f1db33323b5fa))
+
 ## [1.0.2](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.1...v1.0.2) (2026-05-25)
 
 

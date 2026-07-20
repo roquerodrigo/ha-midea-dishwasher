@@ -28,16 +28,7 @@ Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the chang
 
 ## Architecture
 
-The integration follows the HA `DataUpdateCoordinator` pattern over a synchronous LAN library, wrapped through the executor:
-
-```
-config_flow.py   → validates LAN credentials and creates the ConfigEntry
-__init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh
-coordinator.py   → polls every scan_interval seconds; returns the typed status payload
-sensor.py        → reads coordinator.data and creates the entities
-binary_sensor.py → door, rinse_aid
-switch.py        → power on/off (writes to the device, then refreshes the coordinator)
-```
+The integration follows the HA `DataUpdateCoordinator` pattern over a synchronous LAN library, wrapped through the executor. Entity platforms (`sensor/`, `binary_sensor/`, `button/`) use one class per file.
 
 ### Why a sync library wrapped in `async_add_executor_job`
 
@@ -84,3 +75,9 @@ The single `_sync_run[T]` helper wraps every device call in the same try/except 
 - `async_raise_unreachable_device_issue(hass)` is the sample helper that registers an issue. Call helpers like this from the coordinator/setup when you detect a recoverable problem (e.g., consistent connection failures).
 
 Issue strings live under `issues.<issue_id>` in the translation files.
+
+## Gotchas
+
+- `scripts/setup` and `.devcontainer.json`'s `postCreateCommand` still run `pip install --requirement requirements.txt`, but `requirements.txt` was deleted when the repo migrated to `uv` (see `git log -- requirements.txt`) and the scripts were never updated. Bootstrapping a fresh clone or devcontainer via `scripts/setup` fails; run `uv sync --all-groups` instead (this repo has no `tool.uv.default-groups`, so a bare `uv sync` won't pull in `dev`/`lint`).
+- The `midea-dishwasher-api` pin lives in **two places** that must be kept in sync by hand: `pyproject.toml`'s `dev` group (used for tests/mypy) and `manifest.json`'s `requirements` (what HA actually installs at runtime). Dependabot's `uv`-ecosystem entry only bumps the former, and nothing in CI checks the latter — a SDK version bump PR needs `manifest.json` updated manually too, or the shipped integration silently stays on the old SDK release.
+- `api.py` imports `FrameError` from `midea_dishwasher_api.protocol` and `V3Error` from `midea_dishwasher_api.security` — submodule paths, not the top-level re-exports (`midea_dishwasher_api`'s `__init__.py`) that the SDK repo documents as its stable public surface. An internal reshuffle on the SDK side (even a patch release) can break these two imports without touching its documented public API.

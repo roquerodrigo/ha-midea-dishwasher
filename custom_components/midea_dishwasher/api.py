@@ -54,7 +54,7 @@ def _to_status_data(status: DishwasherStatus) -> MideaDishwasherStatusData:
 class MideaDishwasherApiClient:
     """Async client wrapping the synchronous LAN V3 protocol library."""
 
-    def __init__(  # noqa: PLR0913 — five fields of one logical (host, creds) bundle.
+    def __init__(  # noqa: PLR0913, PLR0917 — five fields of one logical (host, creds) bundle.
         self,
         hass: HomeAssistant,
         host: str,

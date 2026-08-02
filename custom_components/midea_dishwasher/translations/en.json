@@ -149,6 +149,9 @@
             "time_remaining": {
                 "name": "Time remaining"
             },
+            "cycle_progress": {
+                "name": "Cycle progress"
+            },
             "error": {
                 "name": "Error code",
                 "state": {

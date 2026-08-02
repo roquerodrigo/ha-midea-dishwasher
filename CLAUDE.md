@@ -38,6 +38,17 @@ The integration follows the HA `DataUpdateCoordinator` pattern over a synchronou
 
 `data.py` defines `MideaDishwasherConfigEntry = ConfigEntry[MideaDishwasherData]` and the `MideaDishwasherData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`. The coordinator's payload is the JSON-friendly `MideaDishwasherStatusData` TypedDict, projected from the library's `DishwasherStatus` dataclass by `api._to_status_data` so diagnostics serialization is free.
 
+### Derived cycle progress
+
+The protocol carries no elapsed time or percentage — `left_time` (minutes
+remaining, only while `cycle_state == work`) is the only progress figure the
+device sends. `MideaDishwasherCycleProgressSensor` therefore records the longest
+`left_time` seen since the cycle started as the cycle duration and reports how
+much of it has elapsed. The duration is published as the `cycle_total_minutes`
+state attribute and restored via `RestoreEntity`, so a restart mid-cycle keeps
+the baseline instead of restarting the percentage at zero; it is dropped as soon
+as the device leaves `work`.
+
 ### Config flow surface
 
 `config_flow.py` implements four user-facing steps; all share one `_validate` helper, one `_normalize` helper, and one `_credentials_schema` builder:

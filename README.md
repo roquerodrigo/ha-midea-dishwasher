@@ -16,7 +16,7 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 - **Local polling** over LAN V3 — no cloud calls once configured.
 - **Config flow** for host, port, device ID, token, key — with reauth and reconfigure flows.
 - **Options flow** with a configurable `scan_interval` (default 30 s, min 10 s).
-- **Entities**: power switch, door / extra-drying / rinse-aid binary sensors, status / progress / mode / time-remaining / error sensors, rinse-aid level number, and start-eco / start-intensive / cancel buttons.
+- **Entities**: power switch, door / extra-drying / rinse-aid binary sensors, status / progress / cycle-progress / mode / time-remaining / error sensors, rinse-aid level number, and start-eco / start-intensive / cancel buttons.
 - **Service** `midea_dishwasher.start_cycle` (mode + extra-drying) for automations.
 - **Diagnostics platform** with credential redaction (`token`, `key`, `device_id`).
 - **Repairs platform** wired into HA's Issue Registry, with a sample `unreachable_device` issue.
@@ -36,11 +36,14 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 | `sensor` | `progress` | `wash_stage` | enum (`idle`, `pre_wash`, `main_wash`, `rinse`, `dry`, `finish`) |
 | `sensor` | `mode` | `mode` | enum (14 programs: `auto`, `eco`, `intensive`, `90min`, `1hour`, `rapid`, …) |
 | `sensor` | `time_remaining` | `left_time` | duration, minutes |
+| `sensor` | `cycle_progress` | `left_time` | percentage elapsed, `unknown` outside a running cycle |
 | `sensor` | `error` | `error_code` | enum (`none`, `water_supply`, `heating`, `overflow`, `water_valve`), diagnostic |
 | `number` | `bright` | `bright` | rinse-aid dosage 1–5 (slider) |
 | `button` | `start_eco` | — | starts ECO cycle |
 | `button` | `start_intensive` | — | starts Intensive cycle (extra-drying ON) |
 | `button` | `cancel` | — | cancels the running cycle |
+
+`cycle_progress` is derived: the device reports only the minutes left, so the cycle duration is the longest `left_time` seen since the cycle started (restored across restarts) and the percentage is how much of it has already elapsed.
 
 For more flexible automations the integration also exposes the `midea_dishwasher.start_cycle` service, which accepts `mode` (any of the 14 programs above) and `extra_drying` (bool).
 
@@ -93,7 +96,7 @@ custom_components/midea_dishwasher/
 ├── number.py               # rinse-aid level slider
 ├── options_flow.py         # OptionsFlow with scan_interval
 ├── repairs.py              # Repair platform: async_create_fix_flow + sample issue
-├── sensor/                 # status, progress, mode, time_remaining, error
+├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error
 ├── services.py             # midea_dishwasher.start_cycle
 ├── services.yaml
 ├── switch.py               # power

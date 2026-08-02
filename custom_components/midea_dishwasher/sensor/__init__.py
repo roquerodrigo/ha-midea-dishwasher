@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .cycle_progress_sensor import MideaDishwasherCycleProgressSensor
 from .error_sensor import MideaDishwasherErrorSensor
 from .mode_sensor import MideaDishwasherModeSensor
 from .progress_sensor import MideaDishwasherProgressSensor
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from ..data import MideaDishwasherConfigEntry
 
 __all__ = [
+    "MideaDishwasherCycleProgressSensor",
     "MideaDishwasherErrorSensor",
     "MideaDishwasherModeSensor",
     "MideaDishwasherProgressSensor",
@@ -37,6 +39,7 @@ async def async_setup_entry(
             MideaDishwasherStatusSensor(coordinator),
             MideaDishwasherModeSensor(coordinator),
             MideaDishwasherProgressSensor(coordinator),
+            MideaDishwasherCycleProgressSensor(coordinator),
             MideaDishwasherTimeRemainingSensor(coordinator),
             MideaDishwasherErrorSensor(coordinator),
         ],

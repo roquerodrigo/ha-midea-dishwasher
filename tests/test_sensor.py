@@ -15,8 +15,8 @@ SAMPLE_STATUS = {
     "machine_state": "power_on",
     "cycle_state": "work",
     "mode": "eco",
-    "wash_stage": 2,
-    "error_code": 0,
+    "wash_stage": "main_wash",
+    "error_code": "none",
     "left_time": 42,
     "door_closed": True,
     "bright_lack": False,
@@ -79,18 +79,9 @@ def test_progress_native_value_known():
     assert sensor.native_value == "main_wash"
 
 
-def test_progress_native_value_all_codes():
-    expected = ("idle", "pre_wash", "main_wash", "rinse", "dry", "finish")
-    for stage, label in enumerate(expected):
-        data = {**SAMPLE_STATUS, "wash_stage": stage}
-        assert (
-            MideaDishwasherProgressSensor(_make_coordinator(data)).native_value == label
-        )
-
-
-def test_progress_native_value_unknown_stage():
-    data = {**SAMPLE_STATUS, "wash_stage": 99}
-    assert MideaDishwasherProgressSensor(_make_coordinator(data)).native_value is None
+def test_progress_options_cover_every_stage():
+    sensor = MideaDishwasherProgressSensor(_make_coordinator())
+    assert sensor.options == ["idle", "pre_wash", "main_wash", "rinse", "dry", "finish"]
 
 
 def test_progress_native_value_explicit_none():
@@ -130,24 +121,20 @@ def test_time_remaining_unique_id():
     )
 
 
-def test_error_native_value_none_for_zero():
+def test_error_native_value_none_for_no_fault():
     sensor = MideaDishwasherErrorSensor(_make_coordinator(SAMPLE_STATUS))
     assert sensor.native_value == "none"
 
 
-def test_error_native_value_known_codes():
-    for code, expected in enumerate(
-        ("none", "water_supply", "heating", "overflow", "water_valve")
-    ):
-        data = {**SAMPLE_STATUS, "error_code": code}
-        assert (
-            MideaDishwasherErrorSensor(_make_coordinator(data)).native_value == expected
-        )
-
-
-def test_error_native_value_unknown_code_returns_none():
-    data = {**SAMPLE_STATUS, "error_code": 99}
-    assert MideaDishwasherErrorSensor(_make_coordinator(data)).native_value is None
+def test_error_options_cover_every_code():
+    sensor = MideaDishwasherErrorSensor(_make_coordinator())
+    assert sensor.options == [
+        "none",
+        "water_supply",
+        "heating",
+        "overflow",
+        "water_valve",
+    ]
 
 
 def test_error_native_value_no_data_returns_none():

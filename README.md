@@ -80,7 +80,7 @@ rm config/.storage/core.entity_registry config/.storage/core.device_registry
 
 ```
 custom_components/midea_dishwasher/
-├── __init__.py             # async_setup_entry / unload / reload
+├── __init__.py             # async_setup (actions) / setup_entry / unload / reload
 ├── api.py                  # MideaDishwasherApiClient (executor-wrapped LAN client)
 ├── binary_sensor/          # door, extra_drying, rinse_aid (one class per file)
 ├── brand/                  # icon/logo for HACS
@@ -88,13 +88,15 @@ custom_components/midea_dishwasher/
 ├── config_flow.py          # user / reauth / reconfigure steps
 ├── const.py                # DOMAIN, LOGGER, defaults, hex-length constants
 ├── coordinator.py          # DataUpdateCoordinator polling the device
-├── data.py                 # typed ConfigEntry + MideaDishwasherData dataclass + TypedDicts
+├── data/                   # one file per TypedDict + the runtime dataclass
 ├── diagnostics.py          # downloadable diagnostics with credential redaction
 ├── entity.py               # base CoordinatorEntity
 ├── exceptions/             # one file per exception class
+├── labels.py               # enum labels derived from the library
 ├── manifest.json
 ├── number.py               # rinse-aid level slider
 ├── options_flow.py         # OptionsFlow with scan_interval
+├── quality_scale.yaml      # HA quality-scale self-assessment
 ├── repairs.py              # Repair platform: async_create_fix_flow + sample issue
 ├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error
 ├── services.py             # midea_dishwasher.start_cycle

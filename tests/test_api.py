@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from midea_dishwasher_api import ErrorCode, WashStage
 
 from custom_components.midea_dishwasher.api import (
     MideaDishwasherApiClient,
@@ -59,8 +60,8 @@ def _fake_status() -> SimpleNamespace:
         cycle_state="work",
         mode="eco",
         extra_drying=True,
-        wash_stage=2,
-        error_code=0,
+        wash_stage=WashStage.MAIN_WASH,
+        error_code=ErrorCode.NONE,
         left_time=42,
         door_closed=True,
         bright_lack=False,
@@ -93,8 +94,8 @@ def test_to_status_data_maps_all_fields():
         "cycle_state": "work",
         "mode": "eco",
         "extra_drying": True,
-        "wash_stage": 2,
-        "error_code": 0,
+        "wash_stage": "main_wash",
+        "error_code": "none",
         "left_time": 42,
         "door_closed": True,
         "bright_lack": False,
@@ -136,6 +137,18 @@ def test_to_status_data_handles_none_wash_stage():
     status = _fake_status()
     status.wash_stage = None
     assert _to_status_data(status)["wash_stage"] is None
+
+
+def test_to_status_data_handles_unknown_wash_stage():
+    status = _fake_status()
+    status.wash_stage = 99  # a stage byte the library doesn't know
+    assert _to_status_data(status)["wash_stage"] is None
+
+
+def test_to_status_data_handles_unknown_error_code():
+    status = _fake_status()
+    status.error_code = 99  # a fault byte the library doesn't know
+    assert _to_status_data(status)["error_code"] is None
 
 
 async def test_get_status_returns_typed_dict(hass):

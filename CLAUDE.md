@@ -36,7 +36,7 @@ The integration follows the HA `DataUpdateCoordinator` pattern over a synchronou
 
 ### Entry typing
 
-`data.py` defines `MideaDishwasherConfigEntry = ConfigEntry[MideaDishwasherData]` and the `MideaDishwasherData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`. The coordinator's payload is the JSON-friendly `MideaDishwasherStatusData` TypedDict, projected from the library's `DishwasherStatus` dataclass by `api._to_status_data` so diagnostics serialization is free.
+The `data/` package holds one file per type: `MideaDishwasherConfigEntry = ConfigEntry[MideaDishwasherData]` and the `type` aliases live in `data/__init__.py`, the `MideaDishwasherData(client, coordinator, integration)` dataclass in `data/runtime.py`, and each TypedDict in its own module. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`. The coordinator's payload is the JSON-friendly `MideaDishwasherStatusData` TypedDict, projected from the library's `DishwasherStatus` dataclass by `api._to_status_data` so diagnostics serialization is free.
 
 ### Derived cycle progress
 
@@ -48,6 +48,33 @@ much of it has elapsed. The duration is published as the `cycle_total_minutes`
 state attribute and restored via `RestoreEntity`, so a restart mid-cycle keeps
 the baseline instead of restarting the percentage at zero; it is dropped as soon
 as the device leaves `work`.
+
+### Enum labels come from the library
+
+`labels.py` derives every enum string from `midea_dishwasher_api`'s own enums:
+the `StrEnum` values for cycle state and mode, the lowercased member names for
+the two `IntEnum`s (wash stage, error code). `api._to_status_data` stores those
+labels in the payload, the enum sensors expose them through `options`, and the
+`start_cycle` schema validates against them — so an option list is never typed
+out twice. `tests/test_labels.py` asserts the labels, the translation files and
+`services.yaml` agree; a new program in the library surfaces there as a failing
+test rather than as an untranslated state in the UI.
+
+### Actions are registered in async_setup
+
+`async_setup` registers `start_cycle` once per Home Assistant start, config
+entry or not (the `action-setup` quality-scale rule), and
+`MideaDishwasherStartCycleService` resolves the targeted entry per call. It
+raises a translated `ServiceValidationError` when the entry is unknown or not
+loaded — without that check, `entry.runtime_data` on an unloaded entry raises
+`AttributeError` at the user.
+
+### PARALLEL_UPDATES
+
+Read-only platforms declare `PARALLEL_UPDATES = 0`; `button`, `number` and
+`switch` declare `1`. The device serves a single LAN session at a time, so two
+commands issued together (two buttons pressed in one script) would race for the
+socket and one of them would fail the handshake.
 
 ### Config flow surface
 

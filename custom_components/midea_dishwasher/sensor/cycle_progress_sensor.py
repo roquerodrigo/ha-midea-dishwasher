@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.const import PERCENTAGE
 from homeassistant.helpers.restore_state import RestoreEntity
+from midea_dishwasher_api import CycleState
 
 from ..entity import MideaDishwasherEntity
 
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 
 ATTR_CYCLE_TOTAL_MINUTES = "cycle_total_minutes"
 
-_RUNNING_CYCLE_STATE = "work"
 _FULL_PERCENTAGE = 100
 
 
@@ -105,4 +105,4 @@ class MideaDishwasherCycleProgressSensor(
     def _is_running(self) -> bool:
         """Return whether the device reports a cycle in progress."""
         data: MideaDishwasherStatusData | None = self.coordinator.data
-        return data is not None and data["cycle_state"] == _RUNNING_CYCLE_STATE
+        return data is not None and data["cycle_state"] == CycleState.WORK

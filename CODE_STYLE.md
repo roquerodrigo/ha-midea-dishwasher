@@ -18,8 +18,9 @@ Style conventions for the `ha-midea-dishwasher` project. Before committing, run
 
 ## File organization
 
-- **One top-level class per file.** Multiple semantically related classes (e.g.
-  exception families, entity classes for one platform) get grouped into a
+- **One top-level class per file — including TypedDicts and dataclasses.**
+  Multiple semantically related classes (exception families, entity classes for
+  one platform, the typed payloads and runtime data) get grouped into a
   package directory with one class per submodule and an `__init__.py`
   re-exporting the public symbols.
   - Example: `exceptions/` contains `api_client_error.py`,
@@ -28,9 +29,14 @@ Style conventions for the `ha-midea-dishwasher` project. Before committing, run
   - Example: `sensor/` contains `status_sensor.py`, `progress_sensor.py`,
     `time_remaining_sensor.py`, `error_sensor.py`, plus `__init__.py`. Same
     pattern for `binary_sensor/` and `button/`.
-- **TypedDicts and `type` aliases do not count as "classes"** for this rule —
-  they live alongside related code (typically in `data.py`) and don't need
-  their own file.
+  - Example: `data/` contains `status_data.py`, `config_data.py`,
+    `options_data.py`, `diagnostics_entry.py`, `diagnostics_payload.py`,
+    `runtime.py`, plus `__init__.py`. Every TypedDict and dataclass gets its
+    own file — a flat multi-class `data.py` is migration debt, not a valid
+    layout.
+- **`type` aliases are the exception: they live in `data/__init__.py`**
+  alongside the re-exports (`JsonPrimitive`, `JsonValue`, `JsonObject`,
+  `MideaDishwasherConfigEntry`), not in their own files.
 - **Helper functions** may live in the same file as the single class that uses
   them (e.g. `_verify_response_or_raise` in `api.py`).
 - **`__init__.py` of the integration package** wires `async_setup_entry`,
@@ -71,12 +77,14 @@ Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 
 Required:
 
-- `TypedDict` for known dict / JSON shapes (see `data.py`:
-  `MideaDishwasherStatusData`, `MideaDishwasherConfigData`,
-  `MideaDishwasherOptionsData`, `MideaDishwasherDiagnosticsPayload`).
-- `@dataclass` for structured records (`MideaDishwasherData`).
+- `TypedDict` for known dict / JSON shapes (see the `data/` package for the
+  canonical examples: `MideaDishwasherStatusData`, `MideaDishwasherConfigData`,
+  `MideaDishwasherOptionsData`, `MideaDishwasherDiagnosticsPayload`, one per
+  file).
+- `@dataclass` for structured records (`MideaDishwasherData` in
+  `data/runtime.py`).
 - Named `type` aliases for recursive / shared shapes — `JsonPrimitive`,
-  `JsonValue`, `JsonObject` in `data.py`.
+  `JsonValue`, `JsonObject` in `data/__init__.py`.
 - `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
 - `cast("TypedDictName", value)` at HA framework boundaries that hand us a
   permissive type (e.g. `entry.data` is `MappingProxyType[str, Any]`).
@@ -176,7 +184,7 @@ with a one-line comment explaining the deliberate narrowing — see
 ## Coordinator and runtime data
 
 - All API state flows through `entry.runtime_data: MideaDishwasherData`
-  (`data.py`). Never store integration state in `hass.data`.
+  (`data/runtime.py`). Never store integration state in `hass.data`.
 - The coordinator is typed as `DataUpdateCoordinator[MideaDishwasherStatusData]`.
   `_async_update_data` returns the typed payload; client errors map to
   `UpdateFailed`, authentication errors to `ConfigEntryAuthFailed` (which
@@ -205,6 +213,19 @@ with a one-line comment explaining the deliberate narrowing — see
   and `device_id` are redacted via `async_redact_data` (driven by
   `TO_REDACT: frozenset[str]`). `host` is intentionally left visible — it
   speeds up troubleshooting and isn't sensitive on its own.
+
+## Enum labels
+
+Every string the integration exposes for a library enum — sensor options, the
+`start_cycle` modes, the values stored in the coordinator payload — is derived
+in `labels.py` from `midea_dishwasher_api`'s own enums. Entities and the service
+schema read those constants; nothing re-types the option list. The translation
+files are the only other place where these strings appear, and
+`tests/test_labels.py` fails when the two drift apart.
+
+Platform modules declare `PARALLEL_UPDATES`: `0` for the read-only platforms
+(the coordinator already serialises polling) and `1` wherever an entity sends a
+command, because the LAN protocol serves one session at a time.
 
 ## Translations
 

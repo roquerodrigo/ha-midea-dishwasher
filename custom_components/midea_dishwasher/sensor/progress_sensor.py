@@ -1,4 +1,4 @@
-"""Progress sensor: maps the device's numeric wash_stage to a labelled enum."""
+"""Progress sensor: the wash stage the device is currently in."""
 
 from __future__ import annotations
 
@@ -7,19 +7,10 @@ from typing import TYPE_CHECKING
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 
 from ..entity import MideaDishwasherEntity
+from ..labels import WASH_STAGE_LABELS
 
 if TYPE_CHECKING:
-    from ..coordinator import MideaDishwasherDataUpdateCoordinator
     from ..data import MideaDishwasherStatusData
-
-_STAGE_TO_OPTION: tuple[str, ...] = (
-    "idle",
-    "pre_wash",
-    "main_wash",
-    "rinse",
-    "dry",
-    "finish",
-)
 
 
 class MideaDishwasherProgressSensor(MideaDishwasherEntity, SensorEntity):
@@ -29,25 +20,20 @@ class MideaDishwasherProgressSensor(MideaDishwasherEntity, SensorEntity):
     _attr_icon = "mdi:progress-clock"
     _attr_device_class = SensorDeviceClass.ENUM
 
-    def __init__(self, coordinator: MideaDishwasherDataUpdateCoordinator) -> None:
-        """Initialize the sensor and copy the enum options off the constant."""
-        super().__init__(coordinator)
-        self._attr_options = list(_STAGE_TO_OPTION)
-
     @property
     def unique_id(self) -> str:
         """Return a unique id derived from entry id."""
         return f"{self.coordinator.config_entry.entry_id}_progress"
 
     @property
+    def options(self) -> list[str]:
+        """Return every wash stage the library can report."""
+        return list(WASH_STAGE_LABELS)
+
+    @property
     def native_value(self) -> str | None:
-        """Return the wash_stage as a label, or None for unknown values."""
+        """Return the wash stage from the latest status payload."""
         data: MideaDishwasherStatusData | None = self.coordinator.data
         if data is None:
             return None
-        stage = data["wash_stage"]
-        if stage is None:
-            return None
-        if 0 <= stage < len(_STAGE_TO_OPTION):
-            return _STAGE_TO_OPTION[stage]
-        return None
+        return data["wash_stage"]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
+from midea_dishwasher_api import Mode
 
 from ..entity import MideaDishwasherEntity
 
@@ -21,7 +22,7 @@ class MideaDishwasherStartIntensiveButton(MideaDishwasherEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Start the intensive cycle with extra drying on the dishwasher."""
         await self.coordinator.config_entry.runtime_data.client.async_start_cycle(
-            mode="intensive",
+            mode=Mode.INTENSIVE.value,
             extra_drying=True,
         )
         await self.coordinator.async_request_refresh()

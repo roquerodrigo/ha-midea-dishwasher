@@ -20,6 +20,7 @@ from .exceptions import (
     MideaDishwasherApiClientCommunicationError,
     MideaDishwasherApiClientError,
 )
+from .labels import error_code_label, wash_stage_label
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -35,15 +36,14 @@ def _to_status_data(status: DishwasherStatus) -> MideaDishwasherStatusData:
     machine_state = status.machine_state
     cycle_state = status.cycle_state
     mode = status.mode
-    wash_stage = status.wash_stage
     bright = status.bright
     return {
         "machine_state": str(machine_state) if machine_state is not None else None,
         "cycle_state": str(cycle_state) if cycle_state is not None else None,
         "mode": str(mode) if isinstance(mode, str) else None,
         "extra_drying": status.extra_drying,
-        "wash_stage": int(wash_stage) if wash_stage is not None else None,
-        "error_code": int(status.error_code),
+        "wash_stage": wash_stage_label(status.wash_stage),
+        "error_code": error_code_label(status.error_code),
         "left_time": status.left_time,
         "door_closed": status.door_closed,
         "bright_lack": status.bright_lack,

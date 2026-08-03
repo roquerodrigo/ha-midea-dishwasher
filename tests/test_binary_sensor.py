@@ -11,8 +11,8 @@ from custom_components.midea_dishwasher.binary_sensor import (
 CLOSED_OK = {
     "machine_state": "power_on",
     "cycle_state": "work",
-    "wash_stage": 2,
-    "error_code": 0,
+    "wash_stage": "main_wash",
+    "error_code": "none",
     "left_time": 42,
     "door_closed": True,
     "bright_lack": False,

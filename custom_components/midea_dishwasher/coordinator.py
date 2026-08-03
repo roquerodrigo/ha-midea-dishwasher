@@ -28,13 +28,20 @@ class MideaDishwasherDataUpdateCoordinator(
 
     config_entry: MideaDishwasherConfigEntry
 
-    def __init__(self, hass: HomeAssistant, scan_interval: timedelta) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        scan_interval: timedelta,
+        config_entry: MideaDishwasherConfigEntry | None = None,
+    ) -> None:
         """Initialize."""
         super().__init__(
             hass=hass,
             logger=LOGGER,
             name=DOMAIN,
             update_interval=scan_interval,
+            always_update=False,
+            config_entry=config_entry,
         )
 
     async def _async_update_data(self) -> MideaDishwasherStatusData:

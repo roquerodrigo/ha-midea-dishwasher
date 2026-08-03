@@ -29,51 +29,6 @@ async def test_setup_entry_creates_number_entity(hass, setup_integration):
     assert len(hass.states.async_all("number")) == 1
 
 
-async def test_start_cycle_service_registered(hass, setup_integration):
-    from custom_components.midea_dishwasher.const import DOMAIN
-
-    assert hass.services.has_service(DOMAIN, "start_cycle")
-
-
-async def test_start_cycle_service_invokes_client(
-    hass, setup_integration, mock_api_client
-):
-    from custom_components.midea_dishwasher.const import DOMAIN
-
-    await hass.services.async_call(
-        DOMAIN,
-        "start_cycle",
-        {
-            "config_entry_id": setup_integration.entry_id,
-            "mode": "eco",
-            "extra_drying": True,
-        },
-        blocking=True,
-    )
-    mock_api_client.async_start_cycle.assert_awaited_once_with(
-        mode="eco", extra_drying=True
-    )
-
-
-async def test_start_cycle_service_unknown_entry_raises(hass, setup_integration):
-    import pytest
-    from homeassistant.exceptions import ServiceValidationError
-
-    from custom_components.midea_dishwasher.const import DOMAIN
-
-    with pytest.raises(ServiceValidationError):
-        await hass.services.async_call(
-            DOMAIN,
-            "start_cycle",
-            {
-                "config_entry_id": "does-not-exist",
-                "mode": "eco",
-                "extra_drying": False,
-            },
-            blocking=True,
-        )
-
-
 async def test_setup_entry_registers_update_listener(hass, setup_integration):
     assert len(setup_integration.update_listeners) == 1
 

@@ -8,15 +8,13 @@ from typing import TYPE_CHECKING, cast
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.const import CONF_DEVICE_ID, CONF_HOST, CONF_PORT, CONF_TOKEN
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .api import MideaDishwasherApiClient
 from .const import (
-    CONF_DEVICE_ID,
     CONF_KEY,
-    CONF_TOKEN,
     DEFAULT_PORT,
     DOMAIN,
     KEY_HEX_LEN,

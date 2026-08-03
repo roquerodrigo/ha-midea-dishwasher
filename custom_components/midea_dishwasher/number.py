@@ -15,6 +15,10 @@ if TYPE_CHECKING:
     from .data import MideaDishwasherConfigEntry, MideaDishwasherStatusData
 
 
+# The LAN protocol serves one session at a time, so commands are sent one by one.
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
     hass: HomeAssistant,  # noqa: ARG001
     entry: MideaDishwasherConfigEntry,

@@ -6,16 +6,18 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, cast
 
 from homeassistant.const import CONF_SCAN_INTERVAL, Platform
+from homeassistant.helpers import config_validation as cv
 from homeassistant.loader import async_get_loaded_integration
 
 from .api import MideaDishwasherApiClient
-from .const import DEFAULT_SCAN_INTERVAL_SECONDS
+from .const import DEFAULT_SCAN_INTERVAL_SECONDS, DOMAIN
 from .coordinator import MideaDishwasherDataUpdateCoordinator
 from .data import MideaDishwasherData
 from .services import async_register_services
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.typing import ConfigType
 
     from .data import MideaDishwasherConfigData, MideaDishwasherConfigEntry
 
@@ -26,6 +28,17 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.SWITCH,
 ]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(
+    hass: HomeAssistant,
+    config: ConfigType,  # noqa: ARG001
+) -> bool:
+    """Register the integration-level actions, config entry or not."""
+    async_register_services(hass)
+    return True
 
 
 async def async_setup_entry(
@@ -40,6 +53,7 @@ async def async_setup_entry(
     coordinator = MideaDishwasherDataUpdateCoordinator(
         hass=hass,
         scan_interval=timedelta(seconds=scan_interval_seconds),
+        config_entry=entry,
     )
     entry.runtime_data = MideaDishwasherData(
         client=MideaDishwasherApiClient(
@@ -58,8 +72,6 @@ async def async_setup_entry(
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
-
-    async_register_services(hass)
 
     return True
 

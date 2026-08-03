@@ -71,6 +71,14 @@
             }
         }
     },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "A entrada {entry_id} não é uma entrada do Midea Dishwasher."
+        },
+        "entry_not_loaded": {
+            "message": "A entrada {entry_id} do Midea Dishwasher não está carregada."
+        }
+    },
     "device": {
         "dishwasher": {
             "name": "Lava-louças"

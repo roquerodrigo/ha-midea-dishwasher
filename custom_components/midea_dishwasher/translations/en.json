@@ -71,6 +71,14 @@
             }
         }
     },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "Config entry {entry_id} is not a Midea Dishwasher entry."
+        },
+        "entry_not_loaded": {
+            "message": "The Midea Dishwasher entry {entry_id} is not loaded."
+        }
+    },
     "device": {
         "dishwasher": {
             "name": "Dishwasher"

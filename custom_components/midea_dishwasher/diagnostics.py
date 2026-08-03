@@ -5,8 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from homeassistant.components.diagnostics import async_redact_data
+from homeassistant.const import CONF_DEVICE_ID, CONF_TOKEN
 
-from .const import CONF_DEVICE_ID, CONF_KEY, CONF_TOKEN
+from .const import CONF_KEY
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

@@ -1,0 +1,82 @@
+rules:
+  # Bronze
+  action-setup: done
+  appropriate-polling: done
+  brands:
+    status: todo
+    comment: Local brand/ directory satisfies HACS; submission to home-assistant/brands is still pending.
+  common-modules: done
+  config-flow: done
+  config-flow-test-coverage: done
+  dependency-transparency: done
+  docs-actions: done
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: todo
+  entity-event-setup:
+    status: exempt
+    comment: No entity subscribes to external events; data flows through the coordinator.
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure: done
+  test-before-setup: done
+  unique-config-entry: done
+
+  # Silver
+  action-exceptions: done
+  config-entry-unloading: done
+  docs-configuration-parameters: done
+  docs-installation-parameters: done
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable: done
+  parallel-updates: done
+  reauthentication-flow: done
+  test-coverage: done
+
+  # Gold
+  devices: done
+  diagnostics: done
+  discovery:
+    status: todo
+    comment: Midea appliances answer a UDP broadcast on the LAN; discovery is not implemented yet.
+  discovery-update-info:
+    status: todo
+    comment: Depends on discovery; a DHCP lease change currently needs the reconfigure flow.
+  docs-data-update: todo
+  docs-examples: todo
+  docs-known-limitations: todo
+  docs-supported-devices: done
+  docs-supported-functions: todo
+  docs-troubleshooting: todo
+  docs-use-cases: todo
+  dynamic-devices:
+    status: exempt
+    comment: One config entry maps to exactly one dishwasher; no devices appear at runtime.
+  entity-category: done
+  entity-device-class: done
+  entity-disabled-by-default:
+    status: exempt
+    comment: All entities are primary appliance state and should be enabled on setup.
+  entity-translations: done
+  exception-translations: done
+  icon-translations:
+    status: exempt
+    comment: Each entity uses a single static icon; no state-based icon mapping is needed.
+  reconfiguration-flow: done
+  repair-issues:
+    status: todo
+    comment: The repairs platform is wired, but no condition raises an issue yet.
+  stale-devices:
+    status: exempt
+    comment: The single device lives and dies with its config entry.
+
+  # Platinum
+  async-dependency:
+    status: exempt
+    comment: The LAN V3 protocol library is synchronous by design; every call runs in the executor.
+  inject-websession:
+    status: exempt
+    comment: The device speaks a raw TCP protocol, so there is no HTTP session to inject.
+  strict-typing: done

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
+from midea_dishwasher_api import MachineState
 
 from .entity import MideaDishwasherEntity
 
@@ -13,6 +14,10 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .data import MideaDishwasherConfigEntry, MideaDishwasherStatusData
+
+
+# The LAN protocol serves one session at a time, so commands are sent one by one.
+PARALLEL_UPDATES = 1
 
 
 async def async_setup_entry(
@@ -42,14 +47,14 @@ class MideaDishwasherPowerSwitch(MideaDishwasherEntity, SwitchEntity):
         data: MideaDishwasherStatusData | None = self.coordinator.data
         if data is None:
             return None
-        return data["machine_state"] == "power_on"
+        return data["machine_state"] == MachineState.POWER_ON
 
-    async def async_turn_on(self, **kwargs: object) -> None:  # noqa: ARG002
+    async def async_turn_on(self, **_kwargs: object) -> None:
         """Power on the dishwasher."""
         await self.coordinator.config_entry.runtime_data.client.async_power_on()
         await self.coordinator.async_request_refresh()
 
-    async def async_turn_off(self, **kwargs: object) -> None:  # noqa: ARG002
+    async def async_turn_off(self, **_kwargs: object) -> None:
         """Power off the dishwasher."""
         await self.coordinator.config_entry.runtime_data.client.async_power_off()
         await self.coordinator.async_request_refresh()

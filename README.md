@@ -3,13 +3,13 @@
 [![CI](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
+[![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-midea-dishwasher&category=integration)
+
+---
+
 Home Assistant integration for **Midea dishwashers** (`device_type 0xE1`, plugin v5), talking to the appliance directly over the LAN — no cloud round-trips at runtime. Built on top of [`midea-dishwasher-api`](https://pypi.org/project/midea-dishwasher-api/), which implements the `AA … E1` application protocol and the LAN V3 transport (handshake 8370 + AES-128-CBC + SHA-256).
 
 Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); architectural notes for AI agents in [`CLAUDE.md`](./CLAUDE.md).
-
-## Add to Home Assistant
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-midea-dishwasher&category=integration)
 
 ## What's included
 

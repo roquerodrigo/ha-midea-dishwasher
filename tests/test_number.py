@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+from homeassistant.exceptions import HomeAssistantError
+
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientCommunicationError,
+)
 from custom_components.midea_dishwasher.number import MideaDishwasherBrightNumber
 
 SAMPLE_STATUS = {
@@ -54,3 +60,13 @@ async def test_set_native_value_calls_client_and_refreshes():
 
 def test_unique_id_combines_entry_id_and_key():
     assert MideaDishwasherBrightNumber(_make_coordinator()).unique_id == "eid_bright"
+
+
+async def test_set_native_value_failure_raises_translated_error_without_refresh():
+    coord = _make_coordinator(SAMPLE_STATUS)
+    coord.config_entry.runtime_data.client.async_set_bright.side_effect = (
+        MideaDishwasherApiClientCommunicationError("down")
+    )
+    with pytest.raises(HomeAssistantError):
+        await MideaDishwasherBrightNumber(coord).async_set_native_value(2.0)
+    coord.async_request_refresh.assert_not_awaited()

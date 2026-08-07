@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -175,124 +174,6 @@ async def test_step_user_short_token_shows_invalid_credentials(
     assert result["errors"]["base"] == "invalid_credentials"
 
 
-# --- .env pre-fill ---------------------------------------------------------
-
-
-def test_parse_env_defaults_complete_file():
-    from custom_components.midea_dishwasher.config_flow import _parse_env_defaults
-
-    text = (
-        "# comment\n"
-        "DEVICE_HOST=192.168.1.50\n"
-        'DEVICE_PORT="6444"\n'
-        "DEVICE_ID=999\n"
-        f"DEVICE_TOKEN={VALID_TOKEN}\n"
-        f"DEVICE_KEY={VALID_KEY}\n"
-    )
-    assert _parse_env_defaults(text) == {
-        "host": "192.168.1.50",
-        "port": 6444,
-        "device_id": 999,
-        "token": VALID_TOKEN,
-        "key": VALID_KEY,
-    }
-
-
-def test_parse_env_defaults_none_input_returns_none():
-    from custom_components.midea_dishwasher.config_flow import _parse_env_defaults
-
-    assert _parse_env_defaults(None) is None
-
-
-def test_parse_env_defaults_partial_returns_none():
-    from custom_components.midea_dishwasher.config_flow import _parse_env_defaults
-
-    assert _parse_env_defaults("DEVICE_HOST=1.2.3.4\n") is None
-
-
-def test_parse_env_defaults_bad_port_returns_none():
-    from custom_components.midea_dishwasher.config_flow import _parse_env_defaults
-
-    text = (
-        "DEVICE_HOST=1.2.3.4\n"
-        "DEVICE_PORT=not-a-number\n"
-        "DEVICE_ID=1\n"
-        f"DEVICE_TOKEN={VALID_TOKEN}\n"
-        f"DEVICE_KEY={VALID_KEY}\n"
-    )
-    assert _parse_env_defaults(text) is None
-
-
-def test_read_env_file_sync_returns_none_when_absent(tmp_path, monkeypatch):
-    from custom_components.midea_dishwasher import config_flow
-
-    monkeypatch.setattr(config_flow, "_ENV_PATH", tmp_path / "nope.env")
-    assert config_flow._read_env_file_sync() is None
-
-
-def test_read_env_file_sync_returns_text(tmp_path, monkeypatch):
-    from custom_components.midea_dishwasher import config_flow
-
-    env = tmp_path / ".env"
-    env.write_text("hello\n", encoding="utf-8")
-    monkeypatch.setattr(config_flow, "_ENV_PATH", env)
-    assert config_flow._read_env_file_sync() == "hello\n"
-
-
-async def test_step_user_form_prefills_from_env(
-    hass, enable_custom_integrations, tmp_path, monkeypatch
-):
-    from custom_components.midea_dishwasher import config_flow
-
-    env = tmp_path / ".env"
-    env.write_text(
-        "DEVICE_HOST=10.0.0.42\n"
-        "DEVICE_PORT=6444\n"
-        "DEVICE_ID=42\n"
-        f"DEVICE_TOKEN={VALID_TOKEN}\n"
-        f"DEVICE_KEY={VALID_KEY}\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(config_flow, "_ENV_PATH", env)
-
-    result = await _start_user_flow(hass)
-    schema = result["data_schema"].schema
-    host_key = next(k for k in schema if getattr(k, "schema", k) == "host")
-    assert host_key.default() == "10.0.0.42"
-
-
-async def test_step_user_form_has_no_prefill_when_env_missing(
-    hass, enable_custom_integrations, tmp_path, monkeypatch
-):
-    from custom_components.midea_dishwasher import config_flow
-
-    monkeypatch.setattr(config_flow, "_ENV_PATH", tmp_path / "absent.env")
-
-    result = await _start_user_flow(hass)
-    schema = result["data_schema"].schema
-    host_key = next(k for k in schema if getattr(k, "schema", k) == "host")
-    assert host_key.default is vol.UNDEFINED
-
-
-async def test_load_env_defaults_uses_executor(hass, tmp_path, monkeypatch):
-    """Live test that the async helper round-trips through the executor."""
-    from custom_components.midea_dishwasher import config_flow
-
-    env = tmp_path / ".env"
-    env.write_text(
-        "DEVICE_HOST=1.2.3.4\n"
-        "DEVICE_PORT=6444\n"
-        "DEVICE_ID=1\n"
-        f"DEVICE_TOKEN={VALID_TOKEN}\n"
-        f"DEVICE_KEY={VALID_KEY}\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(config_flow, "_ENV_PATH", env)
-    result = await config_flow._load_env_defaults(hass)
-    assert result is not None
-    assert result["host"] == "1.2.3.4"
-
-
 # --- Reauth ----------------------------------------------------------------
 
 
@@ -395,3 +276,35 @@ async def test_reconfigure_generic_error_shows_unknown(
         )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "unknown"
+
+
+async def test_reauth_with_a_different_device_id_aborts(
+    hass, enable_custom_integrations
+):
+    entry = _existing_entry(hass)
+    with _patch_client() as mock:
+        mock.return_value.async_get_status = AsyncMock(return_value=SAMPLE_STATUS)
+        result = await entry.start_reauth_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={**NEW_INPUT, "device_id": 999},
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "wrong_device"
+    assert entry.data["device_id"] == USER_INPUT["device_id"]
+
+
+async def test_reconfigure_with_a_different_device_id_aborts(
+    hass, enable_custom_integrations
+):
+    entry = _existing_entry(hass)
+    with _patch_client() as mock:
+        mock.return_value.async_get_status = AsyncMock(return_value=SAMPLE_STATUS)
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={**NEW_INPUT, "device_id": 999},
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "wrong_device"
+    assert entry.data["device_id"] == USER_INPUT["device_id"]

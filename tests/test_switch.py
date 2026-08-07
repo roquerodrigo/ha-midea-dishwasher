@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+from homeassistant.exceptions import HomeAssistantError
+
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientCommunicationError,
+)
 from custom_components.midea_dishwasher.switch import MideaDishwasherPowerSwitch
 
 POWER_ON_DATA = {
@@ -64,3 +70,13 @@ async def test_turn_off_calls_client():
 
 def test_unique_id_combines_entry_id_and_key():
     assert _make_switch().unique_id == "eid_power"
+
+
+async def test_turn_on_failure_raises_translated_error_without_refresh():
+    switch = _make_switch(POWER_OFF_DATA)
+    switch.coordinator.config_entry.runtime_data.client.async_power_on.side_effect = (
+        MideaDishwasherApiClientCommunicationError("down")
+    )
+    with pytest.raises(HomeAssistantError):
+        await switch.async_turn_on()
+    switch.coordinator.async_request_refresh.assert_not_awaited()

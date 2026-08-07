@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.components.button import ButtonEntity
 from midea_dishwasher_api import Mode
 
+from ..device_command import async_run_device_command
 from ..entity import MideaDishwasherEntity
 
 
@@ -21,8 +22,10 @@ class MideaDishwasherStartEcoButton(MideaDishwasherEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Start the ECO cycle on the dishwasher."""
-        await self.coordinator.config_entry.runtime_data.client.async_start_cycle(
-            mode=Mode.ECO.value,
-            extra_drying=False,
+        await async_run_device_command(
+            self.coordinator,
+            self.coordinator.config_entry.runtime_data.client.async_start_cycle(
+                mode=Mode.ECO.value,
+                extra_drying=False,
+            ),
         )
-        await self.coordinator.async_request_refresh()

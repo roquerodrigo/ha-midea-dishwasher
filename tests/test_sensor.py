@@ -65,6 +65,12 @@ def test_status_native_value():
     assert sensor.native_value == "work"
 
 
+def test_status_native_value_none_for_an_unknown_state():
+    data = {**SAMPLE_STATUS, "cycle_state": "mystery_state"}
+    sensor = MideaDishwasherStatusSensor(_make_coordinator(data))
+    assert sensor.native_value is None
+
+
 def test_status_native_value_none_before_first_refresh():
     sensor = MideaDishwasherStatusSensor(_make_coordinator(None))
     assert sensor.native_value is None

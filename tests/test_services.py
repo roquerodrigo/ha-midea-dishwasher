@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import pytest
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from voluptuous import Invalid
 
 from custom_components.midea_dishwasher.const import DOMAIN
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientCommunicationError,
+)
 from custom_components.midea_dishwasher.services import SERVICE_START_CYCLE
 
 
@@ -76,5 +79,20 @@ async def test_service_rejects_an_unknown_mode(hass, setup_integration):
             DOMAIN,
             SERVICE_START_CYCLE,
             {"config_entry_id": setup_integration.entry_id, "mode": "not-a-program"},
+            blocking=True,
+        )
+
+
+async def test_service_translates_a_client_failure(
+    hass, setup_integration, mock_api_client
+):
+    mock_api_client.async_start_cycle.side_effect = (
+        MideaDishwasherApiClientCommunicationError("down")
+    )
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_START_CYCLE,
+            {"config_entry_id": setup_integration.entry_id, "mode": "eco"},
             blocking=True,
         )

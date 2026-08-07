@@ -10,6 +10,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 
 from .const import DOMAIN
+from .device_command import async_run_device_command
 from .labels import MODE_LABELS
 
 if TYPE_CHECKING:
@@ -42,11 +43,13 @@ class MideaDishwasherStartCycleService:
     async def async_handle(self, call: ServiceCall) -> None:
         """Start the requested cycle on the targeted dishwasher."""
         data = self._loaded_entry_data(call.data[ATTR_CONFIG_ENTRY_ID])
-        await data.client.async_start_cycle(
-            mode=call.data[ATTR_MODE],
-            extra_drying=call.data[ATTR_EXTRA_DRYING],
+        await async_run_device_command(
+            data.coordinator,
+            data.client.async_start_cycle(
+                mode=call.data[ATTR_MODE],
+                extra_drying=call.data[ATTR_EXTRA_DRYING],
+            ),
         )
-        await data.coordinator.async_request_refresh()
 
     def _loaded_entry_data(self, entry_id: str) -> MideaDishwasherData:
         """Return the runtime data of a loaded entry, or raise for the user."""

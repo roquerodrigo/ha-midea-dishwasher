@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
-from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 import voluptuous as vol
@@ -17,9 +15,9 @@ from .const import (
     CONF_KEY,
     DEFAULT_PORT,
     DOMAIN,
-    KEY_HEX_LEN,
+    KEY_HEX_LENGTH,
     LOGGER,
-    TOKEN_HEX_LEN,
+    TOKEN_HEX_LENGTH,
 )
 from .exceptions import (
     MideaDishwasherApiClientAuthenticationError,
@@ -31,78 +29,25 @@ from .options_flow import MideaDishwasherOptionsFlow
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from homeassistant.core import HomeAssistant
-
     from .data import MideaDishwasherConfigData, MideaDishwasherConfigEntry
-
-# Convenience for local development: when a `.env` sits next to the HA config
-# directory (i.e. in the repo root in this project), pre-fill the form so the
-# devloop is "click → click → save". A regular HACS install has no `.env`
-# at this path, so this is a no-op for end users.
-_ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
-_ENV_KEYS: dict[str, str] = {
-    "host": "DEVICE_HOST",
-    "port": "DEVICE_PORT",
-    "device_id": "DEVICE_ID",
-    "token": "DEVICE_TOKEN",
-    "key": "DEVICE_KEY",
-}
-
-
-def _read_env_file_sync() -> str | None:
-    """Read the local ``.env`` file synchronously, returning ``None`` if absent."""
-    try:
-        return _ENV_PATH.read_text(encoding="utf-8")
-    except OSError:
-        return None
-
-
-def _parse_env_defaults(text: str | None) -> MideaDishwasherConfigData | None:
-    """Parse a ``.env`` payload into pre-fill defaults, or ``None``."""
-    if text is None:
-        return None
-    parsed: dict[str, str] = {}
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        name, _, value = line.partition("=")
-        parsed[name.strip()] = value.strip().strip('"').strip("'")
-    with suppress(KeyError, ValueError):
-        return {
-            "host": parsed[_ENV_KEYS["host"]],
-            "port": int(parsed[_ENV_KEYS["port"]]),
-            "device_id": int(parsed[_ENV_KEYS["device_id"]]),
-            "token": parsed[_ENV_KEYS["token"]].lower(),
-            "key": parsed[_ENV_KEYS["key"]].lower(),
-        }
-    return None
-
-
-async def _load_env_defaults(
-    hass: HomeAssistant,
-) -> MideaDishwasherConfigData | None:
-    """Return form pre-fill defaults from a local ``.env``, or ``None``."""
-    text = await hass.async_add_executor_job(_read_env_file_sync)
-    return _parse_env_defaults(text)
 
 
 def _credentials_schema(
     defaults: Mapping[str, str | int] | None = None,
 ) -> vol.Schema:
     """Build the LAN credentials schema, optionally pre-filled."""
-    src: Mapping[str, str | int] = defaults or {}
+    source: Mapping[str, str | int] = defaults or {}
     return vol.Schema(
         {
             vol.Required(
                 CONF_HOST,
-                default=src.get("host", vol.UNDEFINED),
+                default=source.get("host", vol.UNDEFINED),
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT),
             ),
             vol.Required(
                 CONF_PORT,
-                default=src.get("port", DEFAULT_PORT),
+                default=source.get("port", DEFAULT_PORT),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     min=1,
@@ -113,7 +58,7 @@ def _credentials_schema(
             ),
             vol.Required(
                 CONF_DEVICE_ID,
-                default=src.get("device_id", vol.UNDEFINED),
+                default=source.get("device_id", vol.UNDEFINED),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     min=1,
@@ -123,13 +68,13 @@ def _credentials_schema(
             ),
             vol.Required(
                 CONF_TOKEN,
-                default=src.get("token", vol.UNDEFINED),
+                default=source.get("token", vol.UNDEFINED),
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD),
             ),
             vol.Required(
                 CONF_KEY,
-                default=src.get("key", vol.UNDEFINED),
+                default=source.get("key", vol.UNDEFINED),
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD),
             ),
@@ -183,11 +128,10 @@ class MideaDishwasherFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     data=dict(normalized),
                 )
 
-        prefill = normalized or await _load_env_defaults(self.hass)
         return self.async_show_form(
             step_id="user",
             data_schema=_credentials_schema(
-                defaults=cast("Mapping[str, str | int] | None", prefill),
+                defaults=cast("Mapping[str, str | int] | None", normalized),
             ),
             errors=errors,
         )
@@ -211,6 +155,8 @@ class MideaDishwasherFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             normalized = _normalize(user_input)
             errors = await self._validate(normalized)
             if not errors:
+                await self.async_set_unique_id(str(normalized["device_id"]))
+                self._abort_if_unique_id_mismatch(reason="wrong_device")
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=dict(normalized),
@@ -236,6 +182,8 @@ class MideaDishwasherFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             normalized = _normalize(user_input)
             errors = await self._validate(normalized)
             if not errors:
+                await self.async_set_unique_id(str(normalized["device_id"]))
+                self._abort_if_unique_id_mismatch(reason="wrong_device")
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=dict(normalized),
@@ -258,20 +206,20 @@ class MideaDishwasherFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             token = bytes.fromhex(user_input["token"])
             key = bytes.fromhex(user_input["key"])
         except ValueError as exception:
-            LOGGER.warning("Token/key is not valid hex: %s", exception)
+            LOGGER.warning("Failed to parse token/key as hex: %s", exception)
             return {"base": "invalid_credentials"}
-        if len(token) * 2 != TOKEN_HEX_LEN or len(key) * 2 != KEY_HEX_LEN:
+        if len(token) * 2 != TOKEN_HEX_LENGTH or len(key) * 2 != KEY_HEX_LENGTH:
             return {"base": "invalid_credentials"}
         try:
             await self._test_credentials(user_input, token=token, key=key)
         except MideaDishwasherApiClientAuthenticationError as exception:
-            LOGGER.warning(exception)
+            LOGGER.warning("Failed to authenticate with the dishwasher: %s", exception)
             return {"base": "auth"}
         except MideaDishwasherApiClientCommunicationError as exception:
-            LOGGER.error(exception)
+            LOGGER.error("Failed to reach the dishwasher: %s", exception)
             return {"base": "connection"}
-        except MideaDishwasherApiClientError as exception:
-            LOGGER.exception(exception)
+        except MideaDishwasherApiClientError:
+            LOGGER.exception("Failed to validate the dishwasher credentials")
             return {"base": "unknown"}
         return {}
 

@@ -65,9 +65,7 @@ rules:
     status: exempt
     comment: Each entity uses a single static icon; no state-based icon mapping is needed.
   reconfiguration-flow: done
-  repair-issues:
-    status: todo
-    comment: The repairs platform is wired, but no condition raises an issue yet.
+  repair-issues: done
   stale-devices:
     status: exempt
     comment: The single device lives and dies with its config entry.

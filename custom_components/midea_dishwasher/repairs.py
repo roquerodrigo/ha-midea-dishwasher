@@ -1,11 +1,10 @@
 """
 Repairs platform for midea_dishwasher.
 
-Wires this integration into Home Assistant's Issue / Repair Registry. Use
-``async_raise_unreachable_device_issue`` (or your own helper) from anywhere
-in the integration to surface a recoverable problem to the user; the UI
-exposes the "Fix" button which routes back here through
-``async_create_fix_flow``.
+Wires this integration into Home Assistant's Issue / Repair Registry. The
+coordinator raises the unreachable-device issue after repeated polling
+failures and clears it on the next successful poll; the UI exposes the
+"Fix" button which routes back here through ``async_create_fix_flow``.
 """
 
 from __future__ import annotations
@@ -39,12 +38,7 @@ async def async_create_fix_flow(
 
 
 def async_raise_unreachable_device_issue(hass: HomeAssistant) -> None:
-    """
-    Raise the unreachable-device issue.
-
-    Call this from the coordinator / setup when the device is consistently
-    unreachable on the LAN, so the user sees a Repair card.
-    """
+    """Raise the unreachable-device issue so the user sees a Repair card."""
     ir.async_create_issue(
         hass,
         DOMAIN,
@@ -53,3 +47,8 @@ def async_raise_unreachable_device_issue(hass: HomeAssistant) -> None:
         severity=ir.IssueSeverity.WARNING,
         translation_key=ISSUE_UNREACHABLE_DEVICE,
     )
+
+
+def async_clear_unreachable_device_issue(hass: HomeAssistant) -> None:
+    """Delete the unreachable-device issue once the device answers again."""
+    ir.async_delete_issue(hass, DOMAIN, ISSUE_UNREACHABLE_DEVICE)

@@ -10,7 +10,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import DOMAIN, LOGGER
 from .exceptions import (
     MideaDishwasherApiClientAuthenticationError,
+    MideaDishwasherApiClientCommunicationError,
     MideaDishwasherApiClientError,
+)
+from .repairs import (
+    async_clear_unreachable_device_issue,
+    async_raise_unreachable_device_issue,
 )
 
 if TYPE_CHECKING:
@@ -19,6 +24,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
     from .data import MideaDishwasherConfigEntry, MideaDishwasherStatusData
+
+UNREACHABLE_DEVICE_FAILURE_THRESHOLD = 3
 
 
 class MideaDishwasherDataUpdateCoordinator(
@@ -43,12 +50,27 @@ class MideaDishwasherDataUpdateCoordinator(
             always_update=False,
             config_entry=config_entry,
         )
+        self._consecutive_communication_failures = 0
 
     async def _async_update_data(self) -> MideaDishwasherStatusData:
         """Fetch the latest status from the dishwasher."""
         try:
-            return await self.config_entry.runtime_data.client.async_get_status()
+            status = await self.config_entry.runtime_data.client.async_get_status()
         except MideaDishwasherApiClientAuthenticationError as exception:
             raise ConfigEntryAuthFailed(exception) from exception
+        except MideaDishwasherApiClientCommunicationError as exception:
+            self._register_communication_failure()
+            raise UpdateFailed(exception) from exception
         except MideaDishwasherApiClientError as exception:
             raise UpdateFailed(exception) from exception
+        self._consecutive_communication_failures = 0
+        async_clear_unreachable_device_issue(self.hass)
+        return status
+
+    def _register_communication_failure(self) -> None:
+        """Count a failed poll, raising the repair issue once persistent."""
+        self._consecutive_communication_failures += 1
+        if self._consecutive_communication_failures >= (
+            UNREACHABLE_DEVICE_FAILURE_THRESHOLD
+        ):
+            async_raise_unreachable_device_issue(self.hass)

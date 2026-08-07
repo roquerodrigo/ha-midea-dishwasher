@@ -6,6 +6,7 @@ from homeassistant.helpers import issue_registry as ir
 from custom_components.midea_dishwasher.const import DOMAIN
 from custom_components.midea_dishwasher.repairs import (
     ISSUE_UNREACHABLE_DEVICE,
+    async_clear_unreachable_device_issue,
     async_create_fix_flow,
     async_raise_unreachable_device_issue,
 )
@@ -36,3 +37,16 @@ async def test_raise_unreachable_device_issue_idempotent(hass):
         if i.domain == DOMAIN and i.issue_id == ISSUE_UNREACHABLE_DEVICE
     ]
     assert len(matching) == 1
+
+
+async def test_clear_unreachable_device_issue_deletes_the_issue(hass):
+    async_raise_unreachable_device_issue(hass)
+    async_clear_unreachable_device_issue(hass)
+    registry = ir.async_get(hass)
+    assert registry.async_get_issue(DOMAIN, ISSUE_UNREACHABLE_DEVICE) is None
+
+
+async def test_clear_unreachable_device_issue_is_a_noop_without_an_issue(hass):
+    async_clear_unreachable_device_issue(hass)
+    registry = ir.async_get(hass)
+    assert registry.async_get_issue(DOMAIN, ISSUE_UNREACHABLE_DEVICE) is None

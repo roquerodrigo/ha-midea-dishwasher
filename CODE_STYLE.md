@@ -27,8 +27,9 @@ Style conventions for the `ha-midea-dishwasher` project. Before committing, run
     `api_client_communication_error.py`, `api_client_authentication_error.py`,
     plus `__init__.py`.
   - Example: `sensor/` contains `status_sensor.py`, `progress_sensor.py`,
-    `time_remaining_sensor.py`, `error_sensor.py`, plus `__init__.py`. Same
-    pattern for `binary_sensor/` and `button/`.
+    `cycle_progress_sensor.py`, `mode_sensor.py`, `time_remaining_sensor.py`,
+    `error_sensor.py`, plus `__init__.py`. Same pattern for `binary_sensor/`
+    and `button/`.
   - Example: `data/` contains `status_data.py`, `config_data.py`,
     `options_data.py`, `diagnostics_entry.py`, `diagnostics_payload.py`,
     `runtime.py`, plus `__init__.py`. Every TypedDict and dataclass gets its
@@ -206,9 +207,10 @@ with a one-line comment explaining the deliberate narrowing — see
 - `options_flow.py` exposes `scan_interval` (seconds; min 10, default 30).
   Changing it triggers `async_reload_entry`, which re-instantiates the
   coordinator with the new `update_interval`.
-- `repairs.py` exposes `async_create_fix_flow`. Sample helpers like
-  `async_raise_unreachable_device_issue` show how to register issues from
-  anywhere in the integration.
+- `repairs.py` exposes `async_create_fix_flow` plus the
+  `async_raise_unreachable_device_issue` / `async_clear_unreachable_device_issue`
+  pair the coordinator calls to keep the `unreachable_device` issue in sync
+  with the device's actual reachability.
 - `diagnostics.py` returns `MideaDishwasherDiagnosticsPayload`. `token`, `key`
   and `device_id` are redacted via `async_redact_data` (driven by
   `TO_REDACT: frozenset[str]`). `host` is intentionally left visible — it
@@ -237,18 +239,17 @@ command, because the LAN protocol serves one session at a time.
 
 ## Pre-commit hooks
 
-`pre-commit` is a dev dependency (`pyproject.toml`) and `.pre-commit-config.yaml`
-mirrors the lint commands (ruff format, ruff check). Install once per
-clone:
+`pre-commit` is a dev dependency (`pyproject.toml`) and
+`.pre-commit-config.yaml` runs ruff and mypy as **local `uv run` hooks**, so
+every commit is checked by the exact tool versions pinned in
+`pyproject.toml` — the same ones CI uses. Install once per clone:
 
 ```bash
 pre-commit install
 ```
 
-The hook runs the same gates as CI on every commit. Skip it only on
-emergency `git commit --no-verify` and immediately re-run
-`uv run ruff format .`, `uv run ruff check . --fix` and
-`uv run mypy custom_components/midea_dishwasher`.
+Skip it only on emergency `git commit --no-verify` and immediately re-run
+`scripts/lint` (or the underlying commands) afterwards.
 
 ## Conventional commits
 
@@ -274,10 +275,10 @@ which `release-please` parses to bump the version and generate `CHANGELOG.md`:
 ## Linting and verification
 
 - Ruff configuration lives in `pyproject.toml` with `select = ["ALL"]`.
-- Mypy configuration lives in `pyproject.toml`. Run both directly:
-  `uv run ruff check . --fix` and `uv run mypy custom_components/midea_dishwasher`.
-- After every change run `uv run ruff format .`, `uv run ruff check . --fix`,
-  `uv run mypy custom_components/midea_dishwasher` and `uv run pytest`. All gates
+- Mypy configuration lives in `pyproject.toml`.
+- After every change run `scripts/lint`, which chains `uv run ruff format .`,
+  `uv run ruff check . --fix`, `uv run mypy custom_components/midea_dishwasher`
+  and `uv run pytest`; running the commands directly is equivalent. All gates
   mirror CI (`.github/workflows/ci.yml`).
 - Tests live in `tests/`, mirroring the production layout. The 90 % coverage
   gate (`pyproject.toml`) prevents untested code from sneaking in. When a test

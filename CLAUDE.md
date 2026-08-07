@@ -18,10 +18,10 @@ This file deliberately avoids restating those rules — it only adds:
 **After every code change, always run lint then tests, in that order, before declaring the task done:**
 
 ```bash
-uv run ruff format . && uv run ruff check . --fix && uv run mypy custom_components/midea_dishwasher && uv run pytest
+scripts/lint
 ```
 
-- The lint commands run `ruff format`, `ruff check --fix` and `mypy` (config in `pyproject.toml`). Fix any failure and re-run before moving on.
+- `scripts/lint` chains `uv run ruff format .`, `uv run ruff check . --fix`, `uv run mypy custom_components/midea_dishwasher` and `uv run pytest` (config in `pyproject.toml`); running the four commands directly is equivalent. Fix any failure and re-run before moving on.
 - `pytest` enforces a **90 % coverage gate** (config in `pyproject.toml`).
 
 Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the change literally cannot affect lint or tests (e.g., README-only edits).
@@ -69,6 +69,15 @@ raises a translated `ServiceValidationError` when the entry is unknown or not
 loaded — without that check, `entry.runtime_data` on an unloaded entry raises
 `AttributeError` at the user.
 
+### Device commands raise translated errors
+
+Every command surface — the `button`/`switch`/`number` entities and the
+`start_cycle` action — goes through `device_command.async_run_device_command`,
+which awaits the client call, converts any `MideaDishwasherApiClientError`
+into a `HomeAssistantError` with the `command_failed` translation key, and
+requests a coordinator refresh only on success. Client exceptions never reach
+the frontend raw.
+
 ### PARALLEL_UPDATES
 
 Read-only platforms declare `PARALLEL_UPDATES = 0`; `button`, `number` and
@@ -83,6 +92,7 @@ socket and one of them would fail the handshake.
 - `async_step_user` — initial setup; sets unique_id from `device_id`, aborts on duplicate.
 - `async_step_reauth` / `async_step_reauth_confirm` — fired when the coordinator raises `ConfigEntryAuthFailed` (cryptographic handshake failure). `async_update_reload_and_abort` rotates credentials in place.
 - `async_step_reconfigure` — lets the user edit credentials via the integration's three-dot menu, no delete-and-re-add cycle.
+- Both reauth and reconfigure set the unique id from the submitted `device_id` and abort with `wrong_device` on mismatch, so an entry can never be repointed at a different appliance.
 - `async_get_options_flow` — returns `MideaDishwasherOptionsFlow` from `options_flow.py` (one class per file).
 
 `_validate` rejects bad hex up front (token must be 128 hex chars, key 64) before attempting a network call.
@@ -110,12 +120,12 @@ The single `_sync_run[T]` helper wraps every device call in the same try/except 
 `repairs.py` is the entry point HA calls when the user clicks **Fix** on an issue:
 
 - `async_create_fix_flow(hass, issue_id, data)` returns a `RepairsFlow`. Branch on `issue_id` for multiple kinds; the default returns `ConfirmRepairFlow`.
-- `async_raise_unreachable_device_issue(hass)` is the sample helper that registers an issue. Call helpers like this from the coordinator/setup when you detect a recoverable problem (e.g., consistent connection failures).
+- The coordinator calls `async_raise_unreachable_device_issue` after three consecutive communication failures and `async_clear_unreachable_device_issue` on the next successful poll, so the `unreachable_device` Repair card tracks the device's actual reachability.
 
 Issue strings live under `issues.<issue_id>` in the translation files.
 
 ## Gotchas
 
-- `scripts/setup` and `.devcontainer.json`'s `postCreateCommand` still run `pip install --requirement requirements.txt`, but `requirements.txt` was deleted when the repo migrated to `uv` (see `git log -- requirements.txt`) and the scripts were never updated. Bootstrapping a fresh clone or devcontainer via `scripts/setup` fails; run `uv sync --all-groups` instead (this repo has no `tool.uv.default-groups`, so a bare `uv sync` won't pull in `dev`/`lint`).
-- The `midea-dishwasher-api` pin lives in **two places** that must be kept in sync by hand: `pyproject.toml`'s `dev` group (used for tests/mypy) and `manifest.json`'s `requirements` (what HA actually installs at runtime). Dependabot's `uv`-ecosystem entry only bumps the former, and nothing in CI checks the latter — a SDK version bump PR needs `manifest.json` updated manually too, or the shipped integration silently stays on the old SDK release.
+- This repo has no `tool.uv.default-groups`, so a bare `uv sync` won't pull in `dev`/`lint`. Use `scripts/setup` (which runs `uv sync --group dev --group lint`) to bootstrap a clone or the devcontainer.
+- The `midea-dishwasher-api` pin lives in **two places**: `pyproject.toml`'s `dev` group (used for tests/mypy) and `manifest.json`'s `requirements` (what HA actually installs at runtime). Dependabot's `uv`-ecosystem entry only bumps the former; `tests/test_manifest.py` fails whenever the two drift, so an SDK bump PR must update `manifest.json` in the same change.
 - `api.py` imports `FrameError` from `midea_dishwasher_api.protocol` and `V3Error` from `midea_dishwasher_api.security` — submodule paths, not the top-level re-exports (`midea_dishwasher_api`'s `__init__.py`) that the SDK repo documents as its stable public surface. An internal reshuffle on the SDK side (even a patch release) can break these two imports without touching its documented public API.

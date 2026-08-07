@@ -19,10 +19,10 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 - **Entities**: power switch, door / extra-drying / rinse-aid binary sensors, status / progress / cycle-progress / mode / time-remaining / error sensors, rinse-aid level number, and start-eco / start-intensive / cancel buttons.
 - **Service** `midea_dishwasher.start_cycle` (mode + extra-drying) for automations.
 - **Diagnostics platform** with credential redaction (`token`, `key`, `device_id`).
-- **Repairs platform** wired into HA's Issue Registry, with a sample `unreachable_device` issue.
+- **Repairs platform**: an `unreachable_device` issue is raised after repeated connection failures and cleared once the device answers again.
 - **Translations** for English and Brazilian Portuguese (parity enforced by tests).
 - **CI**: ruff lint + format, mypy type-check, `hassfest`, HACS validation, CodeQL.
-- **Coverage gate** at 90 % enforced by `pyproject.toml` (currently at 100 %).
+- **Coverage gate** at 90 % enforced by `pyproject.toml`.
 
 ## Entities
 
@@ -60,15 +60,14 @@ Once you have them, paste into the integration's setup form alongside the dishwa
 ## Useful commands
 
 ```bash
-scripts/setup      # install dependencies (requirements.txt)
+scripts/setup      # install dependencies (uv sync with the dev and lint groups)
 scripts/develop    # start Home Assistant in debug mode with the integration loaded
+scripts/lint       # format, lint, type-check and test in one go
 uv run ruff format .                              # format
 uv run ruff check . --fix                         # lint (autofix)
 uv run mypy custom_components/midea_dishwasher     # type-check
 uv run pytest      # run tests with the 90 % coverage gate
 ```
-
-Each script auto-detects `./.venv` and prepends it to `PATH` — no `source .venv/bin/activate` needed. For ad-hoc commands the same trick works: `.venv/bin/pytest`, `.venv/bin/ruff …`.
 
 HA runs with config in `config/` and `PYTHONPATH` pointing at `custom_components/` — no symlinks. To recreate entity/device IDs during development:
 
@@ -89,6 +88,7 @@ custom_components/midea_dishwasher/
 ├── const.py                # DOMAIN, LOGGER, defaults, hex-length constants
 ├── coordinator.py          # DataUpdateCoordinator polling the device
 ├── data/                   # one file per TypedDict + the runtime dataclass
+├── device_command.py       # shared command wrapper raising translated errors
 ├── diagnostics.py          # downloadable diagnostics with credential redaction
 ├── entity.py               # base CoordinatorEntity
 ├── exceptions/             # one file per exception class
@@ -97,7 +97,7 @@ custom_components/midea_dishwasher/
 ├── number.py               # rinse-aid level slider
 ├── options_flow.py         # OptionsFlow with scan_interval
 ├── quality_scale.yaml      # HA quality-scale self-assessment
-├── repairs.py              # Repair platform: async_create_fix_flow + sample issue
+├── repairs.py              # Repair platform: unreachable_device issue + fix flow
 ├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error
 ├── services.py             # midea_dishwasher.start_cycle
 ├── services.yaml
@@ -117,12 +117,12 @@ Install once per clone (after `scripts/setup`):
 pre-commit install
 ```
 
-This wires ruff + basic file hygiene checks (`.pre-commit-config.yaml`) into every commit, mirroring the CI lint job.
+This wires ruff, mypy and basic file hygiene checks (`.pre-commit-config.yaml`) into every commit. The ruff and mypy hooks are local `uv run` hooks, so they use the exact tool versions pinned in `pyproject.toml` — the same ones CI runs.
 
 ## CI
 
-- **`lint.yml`** — ruff (check + format) and mypy (Python 3.14)
-- **`validate.yml`** — `hassfest` + HACS validation; push/PR to `main` and a daily cron
+- **`ci.yml`** — lint (ruff + mypy), tests with the coverage gate, and `hassfest` + HACS validation, all through the shared reusable workflows in [`roquerodrigo/workflows`](https://github.com/roquerodrigo/workflows)
+- **`release.yml`** — release-please cuts a release PR from conventional commits and tags releases on merge
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
 
 ## Credits

@@ -36,7 +36,7 @@ async def async_get_config_entry_diagnostics(
         "Mapping[str, str | int]",
         async_redact_data(dict(entry.options), set(TO_REDACT)),
     )
-    diag_entry: MideaDishwasherDiagnosticsEntry = {
+    diagnostics_entry: MideaDishwasherDiagnosticsEntry = {
         "title": entry.title,
         "version": entry.version,
         "domain": entry.domain,
@@ -44,6 +44,6 @@ async def async_get_config_entry_diagnostics(
         "options": redacted_options,
     }
     return {
-        "entry": diag_entry,
+        "entry": diagnostics_entry,
         "coordinator_data": entry.runtime_data.coordinator.data,
     }

@@ -44,7 +44,8 @@
         "abort": {
             "already_configured": "Esta lava-louças já está configurada.",
             "reauth_successful": "Re-autenticação concluída com sucesso.",
-            "reconfigure_successful": "Reconfiguração concluída com sucesso."
+            "reconfigure_successful": "Reconfiguração concluída com sucesso.",
+            "wrong_device": "As credenciais pertencem a outra lava-louças."
         }
     },
     "options": {
@@ -72,6 +73,9 @@
         }
     },
     "exceptions": {
+        "command_failed": {
+            "message": "Falha ao enviar o comando para a lava-louças: {error}"
+        },
         "entry_not_found": {
             "message": "A entrada {entry_id} não é uma entrada do Midea Dishwasher."
         },

@@ -32,8 +32,9 @@ class MideaDishwasherStatusSensor(MideaDishwasherEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | None:
-        """Return the cycle_state from the latest status payload."""
+        """Return the cycle_state, or None for a state the library doesn't know."""
         data: MideaDishwasherStatusData | None = self.coordinator.data
         if data is None:
             return None
-        return data["cycle_state"]
+        cycle_state = data["cycle_state"]
+        return cycle_state if cycle_state in CYCLE_STATE_LABELS else None

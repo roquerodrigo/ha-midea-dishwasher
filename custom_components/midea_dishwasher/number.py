@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.components.number import NumberEntity, NumberMode
 
+from .device_command import async_run_device_command
 from .entity import MideaDishwasherEntity
 
 if TYPE_CHECKING:
@@ -53,7 +54,9 @@ class MideaDishwasherBrightNumber(MideaDishwasherEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Send the requested level to the dishwasher."""
-        await self.coordinator.config_entry.runtime_data.client.async_set_bright(
-            int(value),
+        await async_run_device_command(
+            self.coordinator,
+            self.coordinator.config_entry.runtime_data.client.async_set_bright(
+                int(value),
+            ),
         )
-        await self.coordinator.async_request_refresh()

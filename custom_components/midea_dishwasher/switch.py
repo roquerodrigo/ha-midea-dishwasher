@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 from midea_dishwasher_api import MachineState
 
+from .device_command import async_run_device_command
 from .entity import MideaDishwasherEntity
 
 if TYPE_CHECKING:
@@ -51,10 +52,14 @@ class MideaDishwasherPowerSwitch(MideaDishwasherEntity, SwitchEntity):
 
     async def async_turn_on(self, **_kwargs: object) -> None:
         """Power on the dishwasher."""
-        await self.coordinator.config_entry.runtime_data.client.async_power_on()
-        await self.coordinator.async_request_refresh()
+        await async_run_device_command(
+            self.coordinator,
+            self.coordinator.config_entry.runtime_data.client.async_power_on(),
+        )
 
     async def async_turn_off(self, **_kwargs: object) -> None:
         """Power off the dishwasher."""
-        await self.coordinator.config_entry.runtime_data.client.async_power_off()
-        await self.coordinator.async_request_refresh()
+        await async_run_device_command(
+            self.coordinator,
+            self.coordinator.config_entry.runtime_data.client.async_power_off(),
+        )

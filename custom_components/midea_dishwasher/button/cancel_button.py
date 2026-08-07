@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
 
+from ..device_command import async_run_device_command
 from ..entity import MideaDishwasherEntity
 
 
@@ -20,5 +21,7 @@ class MideaDishwasherCancelButton(MideaDishwasherEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Send the cancel command to the dishwasher."""
-        await self.coordinator.config_entry.runtime_data.client.async_cancel_work()
-        await self.coordinator.async_request_refresh()
+        await async_run_device_command(
+            self.coordinator,
+            self.coordinator.config_entry.runtime_data.client.async_cancel_work(),
+        )

@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+from homeassistant.exceptions import HomeAssistantError
+
 from custom_components.midea_dishwasher.button import (
     MideaDishwasherCancelButton,
     MideaDishwasherStartEcoButton,
     MideaDishwasherStartIntensiveButton,
+)
+from custom_components.midea_dishwasher.exceptions import (
+    MideaDishwasherApiClientCommunicationError,
 )
 
 
@@ -51,3 +57,13 @@ def test_unique_ids():
     assert MideaDishwasherCancelButton(coord).unique_id == "eid_cancel"
     assert MideaDishwasherStartEcoButton(coord).unique_id == "eid_start_eco"
     assert MideaDishwasherStartIntensiveButton(coord).unique_id == "eid_start_intensive"
+
+
+async def test_press_failure_raises_translated_error_without_refresh():
+    coord = _make_coordinator()
+    coord.config_entry.runtime_data.client.async_cancel_work.side_effect = (
+        MideaDishwasherApiClientCommunicationError("down")
+    )
+    with pytest.raises(HomeAssistantError):
+        await MideaDishwasherCancelButton(coord).async_press()
+    coord.async_request_refresh.assert_not_awaited()

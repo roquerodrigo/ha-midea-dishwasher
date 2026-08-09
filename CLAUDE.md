@@ -28,7 +28,7 @@ Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the chang
 
 ## Architecture
 
-The integration follows the HA `DataUpdateCoordinator` pattern over a synchronous LAN library, wrapped through the executor. Entity platforms (`sensor/`, `binary_sensor/`, `button/`) use one class per file.
+The integration follows the HA `DataUpdateCoordinator` pattern over a synchronous LAN library, wrapped through the executor. Entity platforms use one class per file — `sensor/`, `binary_sensor/` and `button/` are directories, `number.py` and `switch.py` single files.
 
 ### Why a sync library wrapped in `async_add_executor_job`
 

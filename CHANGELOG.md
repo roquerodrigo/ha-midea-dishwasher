@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.1.0...v1.2.0) (2026-08-24)
+
+
+### Features
+
+* **hacs:** ship the install zip with every release ([215a7ef](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/215a7ef126287b03a6463032c6906b293711b742))
+
+
+### Bug Fixes
+
+* **api:** keep an unreachable device out of the reauth flow ([bcf4801](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/bcf480175520760b27296de9b04b657036d42fe3))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump the python-deps group across 1 directory with 4 updates ([83e4447](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/83e44479930216d0f4031345c0d2d294cd50759f))
+
+
+### Documentation
+
+* describe the entity platform layout accurately ([1e5ee6d](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/1e5ee6da377a0840771ea362b18a443c2f665c89))
+* normalize README header layout ([664fa09](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/664fa097f7ea34ef3466df05f6702dcca4685628))
+
 ## [1.1.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.0.2...v1.1.0) (2026-08-07)
 
 

@@ -196,6 +196,22 @@ async def test_v3_error_maps_to_auth_error(hass):
         await _client(hass).async_get_status()
 
 
+async def test_v3_error_caused_by_socket_failure_maps_to_communication_error(hass):
+    from midea_dishwasher_api.security import V3Error
+
+    unreachable = V3Error("Failed to connect to 1.2.3.4:6444")
+    unreachable.__cause__ = ConnectionRefusedError(111, "Connection refused")
+
+    fake_client = MagicMock()
+    fake_client.query_status = MagicMock(side_effect=unreachable)
+    with (
+        _patch_transport(_FakeTransport),
+        _patch_client(MagicMock(return_value=fake_client)),
+        pytest.raises(MideaDishwasherApiClientCommunicationError),
+    ):
+        await _client(hass).async_get_status()
+
+
 async def test_frame_error_maps_to_api_error(hass):
     from midea_dishwasher_api.protocol import FrameError
 

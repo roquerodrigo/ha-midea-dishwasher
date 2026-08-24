@@ -124,6 +124,12 @@ class MideaDishwasherApiClient:
             with self._build_transport() as transport:
                 return action(Client(send=transport))
         except V3Error as exception:
+            # The library wraps socket failures in V3Error too, and an
+            # unreachable device must not be reported as bad credentials:
+            # the coordinator turns an authentication error into a reauth flow.
+            if isinstance(exception.__cause__, OSError):
+                msg = f"Network error talking to device - {exception}"
+                raise MideaDishwasherApiClientCommunicationError(msg) from exception
             msg = f"LAN session error - {exception}"
             raise MideaDishwasherApiClientAuthenticationError(msg) from exception
         except FrameError as exception:

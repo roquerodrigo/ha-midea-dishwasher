@@ -3,6 +3,8 @@
 [![CI](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
+
 [![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-midea-dishwasher&category=integration)
 
 ---
@@ -124,6 +126,10 @@ This wires ruff, mypy and basic file hygiene checks (`.pre-commit-config.yaml`) 
 - **`ci.yml`** — lint (ruff + mypy), tests with the coverage gate, and `hassfest` + HACS validation, all through the shared reusable workflows in [`roquerodrigo/workflows`](https://github.com/roquerodrigo/workflows)
 - **`release.yml`** — release-please cuts a release PR from conventional commits and tags releases on merge
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
+
+## Support
+
+This integration is built and maintained on personal time, on hardware bought for the purpose. If it is useful to you, consider [sponsoring the work](https://github.com/sponsors/roquerodrigo) — it keeps the devices, the testing and the releases coming.
 
 ## Credits
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.2.1) (2026-09-02)
+
+
+### Documentation
+
+* add GitHub Sponsors button and support section ([c070187](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/c0701877f363ae23092a3f607be4f0a4ab0a88da))
+
 ## [1.2.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.1.0...v1.2.0) (2026-08-24)
 
 

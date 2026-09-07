@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.2.1) (2026-09-07)
+
+
+### Dependencies
+
+* **deps:** bump pip from 26.1.2 to 26.2 ([0a93a6d](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/0a93a6df01c4d1e84a3dcfd2f5d963d661fab126))
+* **deps:** bump pip from 26.2 to 26.2.1 ([e4d21e4](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/e4d21e4d78900e4f273774722b7f9598ccda91f5))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff ([f5a8155](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/f5a8155475297adf43a9791e884fb82fe3219daf))
+
+
+### Documentation
+
+* add GitHub Sponsors button and support section ([c070187](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/c0701877f363ae23092a3f607be4f0a4ab0a88da))
+
 ## [1.2.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.1.0...v1.2.0) (2026-08-24)
 
 

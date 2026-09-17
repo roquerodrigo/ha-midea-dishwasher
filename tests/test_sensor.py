@@ -8,6 +8,7 @@ from custom_components.midea_dishwasher.sensor import (
     MideaDishwasherModeSensor,
     MideaDishwasherProgressSensor,
     MideaDishwasherStatusSensor,
+    MideaDishwasherTemperatureSensor,
     MideaDishwasherTimeRemainingSensor,
 )
 
@@ -21,6 +22,8 @@ SAMPLE_STATUS = {
     "door_closed": True,
     "bright_lack": False,
     "bright": 3,
+    "softwater_lack": False,
+    "temperature": 21,
 }
 
 
@@ -32,7 +35,7 @@ def _make_coordinator(data=None):
 
 
 async def test_sensor_count(hass, setup_integration):
-    assert len(hass.states.async_all("sensor")) == 6
+    assert len(hass.states.async_all("sensor")) == 7
 
 
 async def test_status_sensor_state(hass, setup_integration):
@@ -52,6 +55,30 @@ async def test_time_remaining_sensor_state(hass, setup_integration):
     assert state is not None
     assert state.state in {"42", "0.7", "0.70", "0.700"}
     assert state.attributes["device_class"] == "duration"
+
+
+async def test_temperature_sensor_state(hass, setup_integration):
+    state = hass.states.get("sensor.dishwasher_temperature")
+    assert state is not None
+    assert state.state == "21"
+    assert state.attributes["device_class"] == "temperature"
+    assert state.attributes["state_class"] == "measurement"
+    assert state.attributes["unit_of_measurement"] == "°C"
+
+
+def test_temperature_native_value():
+    sensor = MideaDishwasherTemperatureSensor(_make_coordinator(SAMPLE_STATUS))
+    assert sensor.native_value == 21
+
+
+def test_temperature_native_value_none_before_first_refresh():
+    sensor = MideaDishwasherTemperatureSensor(_make_coordinator(None))
+    assert sensor.native_value is None
+
+
+def test_temperature_unique_id():
+    sensor = MideaDishwasherTemperatureSensor(_make_coordinator())
+    assert sensor.unique_id == "eid_temperature"
 
 
 async def test_error_sensor_state(hass, setup_integration):

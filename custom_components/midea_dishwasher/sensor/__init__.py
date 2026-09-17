@@ -9,6 +9,7 @@ from .error_sensor import MideaDishwasherErrorSensor
 from .mode_sensor import MideaDishwasherModeSensor
 from .progress_sensor import MideaDishwasherProgressSensor
 from .status_sensor import MideaDishwasherStatusSensor
+from .temperature_sensor import MideaDishwasherTemperatureSensor
 from .time_remaining_sensor import MideaDishwasherTimeRemainingSensor
 
 if TYPE_CHECKING:
@@ -23,6 +24,7 @@ __all__ = [
     "MideaDishwasherModeSensor",
     "MideaDishwasherProgressSensor",
     "MideaDishwasherStatusSensor",
+    "MideaDishwasherTemperatureSensor",
     "MideaDishwasherTimeRemainingSensor",
 ]
 
@@ -45,5 +47,6 @@ async def async_setup_entry(
             MideaDishwasherCycleProgressSensor(coordinator),
             MideaDishwasherTimeRemainingSensor(coordinator),
             MideaDishwasherErrorSensor(coordinator),
+            MideaDishwasherTemperatureSensor(coordinator),
         ],
     )

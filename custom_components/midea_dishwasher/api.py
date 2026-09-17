@@ -48,6 +48,8 @@ def _to_status_data(status: DishwasherStatus) -> MideaDishwasherStatusData:
         "door_closed": status.door_closed,
         "bright_lack": status.bright_lack,
         "bright": int(bright) if bright is not None else None,
+        "softwater_lack": status.softwater_lack,
+        "temperature": status.temperature,
     }
 
 

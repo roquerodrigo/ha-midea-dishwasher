@@ -28,6 +28,8 @@ SAMPLE_STATUS = {
     "door_closed": True,
     "bright_lack": False,
     "bright": 3,
+    "softwater_lack": False,
+    "temperature": 21,
 }
 
 VALID_TOKEN = "ab" * 64

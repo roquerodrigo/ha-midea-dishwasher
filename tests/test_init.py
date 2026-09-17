@@ -10,11 +10,11 @@ async def test_setup_entry_loads_successfully(hass, setup_integration):
 
 
 async def test_setup_entry_creates_sensor_entities(hass, setup_integration):
-    assert len(hass.states.async_all("sensor")) == 6
+    assert len(hass.states.async_all("sensor")) == 7
 
 
 async def test_setup_entry_creates_binary_sensor_entities(hass, setup_integration):
-    assert len(hass.states.async_all("binary_sensor")) == 3
+    assert len(hass.states.async_all("binary_sensor")) == 4
 
 
 async def test_setup_entry_creates_switch_entity(hass, setup_integration):

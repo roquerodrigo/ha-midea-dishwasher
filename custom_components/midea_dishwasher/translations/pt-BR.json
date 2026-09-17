@@ -98,6 +98,9 @@
             },
             "rinse_aid": {
                 "name": "Abrilhantador"
+            },
+            "salt": {
+                "name": "Sal"
             }
         },
         "button": {
@@ -173,6 +176,9 @@
                     "overflow": "Transbordamento",
                     "water_valve": "Válvula de água"
                 }
+            },
+            "temperature": {
+                "name": "Temperatura"
             }
         },
         "switch": {

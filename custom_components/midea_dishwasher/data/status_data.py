@@ -18,3 +18,5 @@ class MideaDishwasherStatusData(TypedDict):
     door_closed: bool
     bright_lack: bool
     bright: int | None
+    softwater_lack: bool
+    temperature: int | None

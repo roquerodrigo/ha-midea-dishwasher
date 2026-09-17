@@ -98,6 +98,9 @@
             },
             "rinse_aid": {
                 "name": "Rinse aid"
+            },
+            "salt": {
+                "name": "Salt"
             }
         },
         "button": {
@@ -173,6 +176,9 @@
                     "overflow": "Overflow",
                     "water_valve": "Water valve"
                 }
+            },
+            "temperature": {
+                "name": "Temperature"
             }
         },
         "switch": {

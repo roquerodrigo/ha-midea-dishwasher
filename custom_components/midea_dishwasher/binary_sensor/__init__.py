@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from .door_binary_sensor import MideaDishwasherDoorBinarySensor
 from .extra_drying_binary_sensor import MideaDishwasherExtraDryingBinarySensor
 from .rinse_aid_binary_sensor import MideaDishwasherRinseAidBinarySensor
+from .salt_binary_sensor import MideaDishwasherSaltBinarySensor
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -18,6 +19,7 @@ __all__ = [
     "MideaDishwasherDoorBinarySensor",
     "MideaDishwasherExtraDryingBinarySensor",
     "MideaDishwasherRinseAidBinarySensor",
+    "MideaDishwasherSaltBinarySensor",
 ]
 
 
@@ -36,5 +38,6 @@ async def async_setup_entry(
             MideaDishwasherDoorBinarySensor(coordinator),
             MideaDishwasherExtraDryingBinarySensor(coordinator),
             MideaDishwasherRinseAidBinarySensor(coordinator),
+            MideaDishwasherSaltBinarySensor(coordinator),
         ],
     )

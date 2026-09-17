@@ -66,6 +66,8 @@ def _fake_status() -> SimpleNamespace:
         door_closed=True,
         bright_lack=False,
         bright=3,
+        softwater_lack=False,
+        temperature=21,
     )
 
 
@@ -100,6 +102,8 @@ def test_to_status_data_maps_all_fields():
         "door_closed": True,
         "bright_lack": False,
         "bright": 3,
+        "softwater_lack": False,
+        "temperature": 21,
     }
 
 

@@ -34,11 +34,13 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 | `binary_sensor` | `door` | `door_closed` (inverted) | device class `door` |
 | `binary_sensor` | `extra_drying` | `extra_drying` | flag of the running cycle |
 | `binary_sensor` | `rinse_aid` | `bright_lack` | device class `problem`, diagnostic |
+| `binary_sensor` | `salt` | `softwater_lack` | device class `problem`, diagnostic |
 | `sensor` | `status` | `cycle_state` | enum (`power_off`, `idle`, `order`, `work`, `error`, `soft_gear`) |
 | `sensor` | `progress` | `wash_stage` | enum (`idle`, `pre_wash`, `main_wash`, `rinse`, `dry`, `finish`) |
 | `sensor` | `mode` | `mode` | enum (14 programs: `auto`, `eco`, `intensive`, `90min`, `1hour`, `rapid`, …) |
 | `sensor` | `time_remaining` | `left_time` | duration, minutes |
 | `sensor` | `cycle_progress` | `left_time` | percentage elapsed, `unknown` outside a running cycle |
+| `sensor` | `temperature` | `temperature` | tub water temperature, °C |
 | `sensor` | `error` | `error_code` | enum (`none`, `water_supply`, `heating`, `overflow`, `water_valve`), diagnostic |
 | `number` | `bright` | `bright` | rinse-aid dosage 1–5 (slider) |
 | `button` | `start_eco` | — | starts ECO cycle |
@@ -83,7 +85,7 @@ rm config/.storage/core.entity_registry config/.storage/core.device_registry
 custom_components/midea_dishwasher/
 ├── __init__.py             # async_setup (actions) / setup_entry / unload / reload
 ├── api.py                  # MideaDishwasherApiClient (executor-wrapped LAN client)
-├── binary_sensor/          # door, extra_drying, rinse_aid (one class per file)
+├── binary_sensor/          # door, extra_drying, rinse_aid, salt (one class per file)
 ├── brand/                  # icon/logo for HACS
 ├── button/                 # cancel, start_eco, start_intensive
 ├── config_flow.py          # user / reauth / reconfigure steps
@@ -100,7 +102,7 @@ custom_components/midea_dishwasher/
 ├── options_flow.py         # OptionsFlow with scan_interval
 ├── quality_scale.yaml      # HA quality-scale self-assessment
 ├── repairs.py              # Repair platform: unreachable_device issue + fix flow
-├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error
+├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error, temperature
 ├── services.py             # midea_dishwasher.start_cycle
 ├── services.yaml
 ├── switch.py               # power

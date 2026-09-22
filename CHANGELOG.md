@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.3.0...v1.3.1) (2026-09-22)
+
+
+### Dependencies
+
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([9c25c63](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/9c25c631a31e6e4dd152a450b837cf5b459545e1))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff in the python-deps group ([aa33faf](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/aa33faf899c8bb27252e0d3dfb360b05df2ae51a))
+
 ## [1.3.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.3.0) (2026-09-17)
 
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.3.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.3.0...v1.3.1) (2026-10-02)
+
+
+### Dependencies
+
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([9c25c63](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/9c25c631a31e6e4dd152a450b837cf5b459545e1))
+* **deps:** bump urllib3 from 2.7.0 to 2.8.0 ([426fb72](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/426fb72a0cda01a7f0c94b0f42c2a0440eb54fa2))
+* **deps:** bump virtualenv from 21.3.3 to 21.7.13 ([a4c4e29](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/a4c4e29863bf607bf409ea09178f3c4e41090bb6))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff in the python-deps group ([e410300](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/e410300d87e3d1829c4077a61748a9ba01cdd9a7))
+* **deps-dev:** bump ruff in the python-deps group ([aa33faf](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/aa33faf899c8bb27252e0d3dfb360b05df2ae51a))
+
+
+### Build System
+
+* **release:** bump uv.lock through release-please ([b859979](https://github.com/roquerodrigo/ha-midea-dishwasher/commit/b859979d9a8a05430904ccc24d78e0201853e333))
+
 ## [1.3.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.3.0) (2026-09-17)
 
 

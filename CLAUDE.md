@@ -109,6 +109,8 @@ socket and one of them would fail the handshake.
 - `MideaDishwasherApiClientCommunicationError` (`OSError` family — connection refused, timeouts, DNS failures)
 - `MideaDishwasherApiClientAuthenticationError` (`V3Error` from the LAN handshake — wrong token/key, signature mismatch)
 
+The library also wraps socket failures in `V3Error`, so `_sync_run` maps a `V3Error` whose `__cause__` is an `OSError` to the communication error, not the authentication one — otherwise an unreachable dishwasher would be reported as bad credentials and the coordinator would start a reauth flow.
+
 The single `_sync_run[T]` helper wraps every device call in the same try/except envelope so the same mapping rules apply to status reads and control commands.
 
 ### Diagnostics

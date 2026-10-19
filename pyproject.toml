@@ -11,14 +11,14 @@ package = false
 dev = [
     "homeassistant==2026.9.2",
     "midea-dishwasher-api==2.0.0",
-    "pre-commit==4.6.2",
+    "pre-commit==4.7.0",
     "pytest==9.0.3",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
     "pytest-homeassistant-custom-component==0.13.365",
 ]
 lint = [
-    "ruff==0.17.0",
+    "ruff==0.17.1",
     "mypy==2.4.0",
 ]
 

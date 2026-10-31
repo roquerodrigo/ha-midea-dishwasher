@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.3.0...v1.3.1) (2026-10-31)
+
+Internal maintenance only, with no changes for those who use the project.
+
 ## [1.3.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.3.0) (2026-09-17)
 
 

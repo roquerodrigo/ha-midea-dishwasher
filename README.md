@@ -23,7 +23,7 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 - **Diagnostics platform** with credential redaction (`token`, `key`, `device_id`).
 - **Repairs platform**: an `unreachable_device` issue is raised after repeated connection failures and cleared once the device answers again.
 - **Translations** for English and Brazilian Portuguese (parity enforced by tests).
-- **CI**: ruff lint + format, mypy type-check, `hassfest`, HACS validation, CodeQL.
+- **CI**: ruff lint + format, mypy type-check, Home Assistant Marketplace validation (`hassfest` and the catalog checks), CodeQL.
 - **Coverage gate** at 90 % enforced by `pyproject.toml`.
 
 ## Entities
@@ -125,7 +125,7 @@ This wires ruff, mypy and basic file hygiene checks (`.pre-commit-config.yaml`) 
 
 ## CI
 
-- **`ci.yml`** — lint (ruff + mypy), tests with the coverage gate, and `hassfest` + HACS validation, all through the shared reusable workflows in [`roquerodrigo/workflows`](https://github.com/roquerodrigo/workflows)
+- **`ci.yml`** — lint (ruff + mypy) and tests with the coverage gate through the shared reusable workflows in [`roquerodrigo/workflows`](https://github.com/roquerodrigo/workflows), and the Home Assistant Marketplace validation of [Home Assistant Autopilot](https://github.com/marketplace/actions/home-assistant-autopilot)
 - **`release.yml`** — [Release Autopilot](https://github.com/marketplace/actions/release-autopilot) cuts a release PR from conventional commits and tags releases on merge
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
 

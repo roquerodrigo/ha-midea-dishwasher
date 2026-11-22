@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.3.0...v1.3.1) (2026-11-22)
+
+Commands sent to the dishwasher now wait for its acknowledgement, so failed commands are reported instead of appearing to succeed.
+
+### Improvements
+
+- Commands now take about 0.6 seconds instead of 0.2 seconds because they wait for the dishwasher's acknowledgement. ([#101](https://github.com/roquerodrigo/ha-midea-dishwasher/pull/101))
+
+### Bug fixes
+
+- Commands now wait for the dishwasher's acknowledgement (midea-dishwasher-api 2.0.1), so a command the machine did not apply, such as one sent with a wrong device ID, is reported as a communication error instead of succeeding silently. ([#101](https://github.com/roquerodrigo/ha-midea-dishwasher/pull/101))
+
 ## [1.3.0](https://github.com/roquerodrigo/ha-midea-dishwasher/compare/v1.2.0...v1.3.0) (2026-09-17)
 
 

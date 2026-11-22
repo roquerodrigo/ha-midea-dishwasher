@@ -1068,7 +1068,7 @@ lint = [
 [package.metadata.requires-dev]
 dev = [
     { name = "homeassistant", specifier = "==2026.9.2" },
-    { name = "midea-dishwasher-api", specifier = "==2.0.0" },
+    { name = "midea-dishwasher-api", specifier = "==2.0.1" },
     { name = "pre-commit", specifier = "==4.7.0" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.365" },
 ]
@@ -1478,14 +1478,14 @@ wheels = [
 
 [[package]]
 name = "midea-dishwasher-api"
-version = "2.0.0"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/8f/e979816b7c6329741656bd749c4ca45e0e480219f12572a8d52ff1955d48/midea_dishwasher_api-2.0.0.tar.gz", hash = "sha256:73185a79db7369b6b8a2102baba5a659e2e866cdfe5d19fc6f99f9ed4fb04a63", size = 23145, upload-time = "2026-09-17T01:01:39.426Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/5e/677db635804f9bfe6273a2f251094edc3c865f56cdd36a23a90b23ca5aec/midea_dishwasher_api-2.0.1.tar.gz", hash = "sha256:f608bb0d4401e2ceb23621cb5b2aa4849d8e4d5df28e49dfeab98c701869dcb0", size = 24908, upload-time = "2026-11-22T11:26:18.451Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/09/86104aee8346af8c622689f04122c7f4446a7890444f6337c078998ac072/midea_dishwasher_api-2.0.0-py3-none-any.whl", hash = "sha256:2c83966e52696ea95b74cf451c8e5de303299a82e6639bceb81487d4b810476d", size = 23518, upload-time = "2026-09-17T01:01:38.273Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/35/45a925d6aa53c6e3a9991af4885ce11dce77a2d47da05a834e83ea9fd3ab/midea_dishwasher_api-2.0.1-py3-none-any.whl", hash = "sha256:2b9a5219f05cd83e29646839e7aa617dc35808171dc21867a0924fc799ac3c48", size = 24192, upload-time = "2026-11-22T11:26:17.537Z" },
 ]
 
 [[package]]

@@ -28,7 +28,7 @@ Style conventions for the `ha-midea-dishwasher` project. Before committing, run
     plus `__init__.py`.
   - Example: `sensor/` contains `status_sensor.py`, `progress_sensor.py`,
     `cycle_progress_sensor.py`, `mode_sensor.py`, `time_remaining_sensor.py`,
-    `error_sensor.py`, plus `__init__.py`. Same pattern for `binary_sensor/`
+    `error_sensor.py`, `temperature_sensor.py`, plus `__init__.py`. Same pattern for `binary_sensor/`
     and `button/`.
   - Example: `data/` contains `status_data.py`, `config_data.py`,
     `options_data.py`, `diagnostics_entry.py`, `diagnostics_payload.py`,
@@ -39,9 +39,10 @@ Style conventions for the `ha-midea-dishwasher` project. Before committing, run
   alongside the re-exports (`JsonPrimitive`, `JsonValue`, `JsonObject`,
   `MideaDishwasherConfigEntry`), not in their own files.
 - **Helper functions** may live in the same file as the single class that uses
-  them (e.g. `_verify_response_or_raise` in `api.py`).
-- **`__init__.py` of the integration package** wires `async_setup_entry`,
-  `async_unload_entry`, `async_reload_entry` and nothing else.
+  them (e.g. `_to_status_data` in `api.py`).
+- **`__init__.py` of the integration package** wires `async_setup` (which
+  only registers the actions), `async_setup_entry`, `async_unload_entry`,
+  `async_reload_entry` and nothing else.
 
 ## Entities: one class per entity
 

@@ -1,55 +1,63 @@
-# Contribution guidelines
+# Contributing
 
-Contributing to this project should be as easy and transparent as possible, whether it's:
+Bug reports, ideas and pull requests are welcome.
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
+## Reporting a bug
 
-## Github is used for everything
+Open an [issue](https://github.com/roquerodrigo/ha-midea-dishwasher/issues/new/choose)
+with:
 
-Github is used to host code, to track issues and feature requests, as well as accept pull requests.
+- the Home Assistant version, the integration version and the dishwasher model;
+- what you did, what you expected and what happened;
+- the diagnostics downloaded from the integration's menu (the token, the key
+  and the device ID are redacted) and the relevant debug log lines.
 
-Pull requests are the best way to propose changes to the codebase.
+## Development setup
 
-1. Fork the repo and create your branch from `main`.
-2. If you've changed something, update the documentation.
-3. Make sure your code lints (`uv run ruff format .`, `uv run ruff check . --fix`, `uv run mypy custom_components/midea_dishwasher`).
-4. Test your contribution.
-5. Issue that pull request!
+The project uses [uv](https://docs.astral.sh/uv/). A dev container
+(`.devcontainer.json`) with everything installed is also provided.
 
-## Any contributions you make will be under the MIT Software License
+```bash
+scripts/setup      # install the dev and lint dependencies into .venv
+scripts/develop    # run Home Assistant at http://localhost:8123 with this integration loaded
+```
 
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+`scripts/develop` uses the configuration in [`config/`](config/), with debug
+logging enabled for the integration. A bare `uv sync` does not install the
+dev and lint groups, so use `scripts/setup`.
 
-## Report bugs using Github's [issues](../../issues)
+## Checks
 
-GitHub issues are used to track public bugs.
-Report a bug by [opening a new issue](../../issues/new/choose); it's that easy!
+Run these before opening a pull request. CI runs the same ones, plus the Home
+Assistant Marketplace validation. `pre-commit install` runs the first three on
+every commit, with the same tool versions.
 
-## Write bug reports with detail, background, and sample code
+```bash
+uv run ruff format .                              # format
+uv run ruff check . --fix                         # lint
+uv run mypy custom_components/midea_dishwasher    # type-check
+uv run pytest                                     # tests, coverage must stay at 90 % or more
+```
 
-**Great Bug Reports** tend to have:
+`scripts/lint` runs all four in that order.
 
-- A quick summary and/or background
-- Steps to reproduce
-  - Be specific!
-  - Give sample code if you can.
-- What you expected would happen
-- What actually happens
-- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
+Read [CODE_STYLE.md](CODE_STYLE.md) before adding or restructuring code.
 
-## Use a Consistent Coding Style
+## Pull requests
 
-The project uses [ruff](https://docs.astral.sh/ruff/) (config in `pyproject.toml`). Run `uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/midea_dishwasher` before sending a PR.
-
-## Test your code modification
-
-This integration is bootstrapped from the [`integration_blueprint`](https://github.com/ludeeus/integration_blueprint) template.
-
-It comes with a development environment in a container, easy to launch if you use Visual Studio Code. With this container you will have a stand-alone Home Assistant instance running and already configured with the included [`configuration.yaml`](./config/configuration.yaml) file.
+1. Fork the repository and branch from `main`.
+2. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org/).
+   Releases and their notes are generated from them. Mark breaking changes
+   with `!` or a `BREAKING CHANGE:` footer.
+3. Update `translations/en.json` and `translations/pt-BR.json` together when
+   you change user-facing strings. The tests fail when the two files, the
+   program list in `services.yaml` and the library's enums disagree.
+4. When you bump `midea-dishwasher-api`, change the pin in `pyproject.toml`
+   and in `manifest.json` in the same pull request. A test checks that they
+   match.
+5. Update the README when behaviour, configuration or entities change.
+6. Fill in the pull request template.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its MIT License.
+Contributions are released under the project's [MIT License](LICENSE).

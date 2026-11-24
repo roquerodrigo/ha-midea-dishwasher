@@ -6,7 +6,7 @@ Guidance for Claude Code (claude.ai/code) agents working in this repository.
 
 Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)**. It is the single source of truth for conventions: language, file organisation, naming, typing, properties vs `__init__`, imports, docstrings, comments, coordinator pattern, repairs/diagnostics layout, translations, lint workflow.
 
-For user-facing topics (entities, how to obtain `token`/`key`, layout diagram, useful commands, CI list), see [`README.md`](./README.md).
+For user-facing topics (entities, options, the `start_cycle` action, how to obtain `token`/`key`), see [`README.md`](./README.md). Development setup and commands live in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 This file deliberately avoids restating those rules — it only adds:
 

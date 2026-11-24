@@ -1,142 +1,253 @@
-# Midea Dishwasher for Home Assistant
+# Midea Dishwasher
 
+<!-- ha-marketplace:exclude-start -->
 [![CI](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-midea-dishwasher/actions/workflows/ci.yml)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/v/release/roquerodrigo/ha-midea-dishwasher)](https://github.com/roquerodrigo/ha-midea-dishwasher/releases/latest)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/roquerodrigo)
 
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-midea-dishwasher&category=integration)
+<!-- ha-marketplace:exclude-end -->
 
-[![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-midea-dishwasher&category=integration)
+Follow your Midea dishwasher from Home Assistant: what it is doing, how long
+the cycle still takes, whether the door is open and when the rinse aid or the
+salt runs out. You can also start a program, cancel it and turn the dishwasher
+on or off. Home Assistant talks to the dishwasher on your local network, so
+day to day nothing goes through Midea's cloud. The protocol is implemented in
+the [midea-dishwasher-api](https://github.com/roquerodrigo/midea-dishwasher-api)
+library.
 
----
+## Features
 
-Home Assistant integration for **Midea dishwashers** (`device_type 0xE1`, plugin v5), talking to the appliance directly over the LAN — no cloud round-trips at runtime. Built on top of [`midea-dishwasher-api`](https://pypi.org/project/midea-dishwasher-api/), which implements the `AA … E1` application protocol and the LAN V3 transport (handshake 8370 + AES-128-CBC + SHA-256).
+- See the status, the program and the wash stage of the current cycle, with
+  the time remaining and how much of the cycle is done.
+- Get a warning when the rinse aid or the dishwasher salt runs out.
+- Know when the door is open, and read the water temperature in the tub.
+- Start an ECO or Intensive cycle with one button, or any of the 14 programs
+  from an automation, with or without extra drying.
+- Cancel a running cycle, turn the dishwasher on or off and set the rinse aid
+  level.
+- Get a repair notice in Home Assistant when the dishwasher stops answering.
 
-Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); architectural notes for AI agents in [`CLAUDE.md`](./CLAUDE.md).
+## Requirements
 
-## What's included
+- Home Assistant 2026.8.0 or newer.
+- A Midea dishwasher with Wi-Fi, added to your Midea app account and connected
+  to a network that Home Assistant can reach.
+- The dishwasher's IP address, device ID, token and key. See Getting the token
+  and key below.
 
-- **Local polling** over LAN V3 — no cloud calls once configured.
-- **Config flow** for host, port, device ID, token, key — with reauth and reconfigure flows.
-- **Options flow** with a configurable `scan_interval` (default 30 s, min 10 s).
-- **Entities**: power switch, door / extra-drying / rinse-aid binary sensors, status / progress / cycle-progress / mode / time-remaining / error sensors, rinse-aid level number, and start-eco / start-intensive / cancel buttons.
-- **Service** `midea_dishwasher.start_cycle` (mode + extra-drying) for automations.
-- **Diagnostics platform** with credential redaction (`token`, `key`, `device_id`).
-- **Repairs platform**: an `unreachable_device` issue is raised after repeated connection failures and cleared once the device answers again.
-- **Translations** for English and Brazilian Portuguese (parity enforced by tests).
-- **CI**: ruff lint + format, mypy type-check, Home Assistant Marketplace validation (`hassfest` and the catalog checks), CodeQL.
-- **Coverage gate** at 90 % enforced by `pyproject.toml`.
+<!-- ha-marketplace:exclude-start -->
+## Installation
+
+### Home Assistant Marketplace (recommended)
+
+1. Select the **Open your Home Assistant instance** button above, or go to
+   **Settings → Marketplace**, select **Add from link** in the upper right
+   corner, enter `roquerodrigo/ha-midea-dishwasher` and select **Add**.
+2. Select **Install**.
+3. Restart Home Assistant.
+
+The Marketplace comes with Home Assistant 2026.11 and later. On older
+versions, add this repository to HACS as a custom repository of type
+**Integration** and install it from there.
+
+### Manual
+
+1. Download `midea_dishwasher.zip` from the
+   [latest release](https://github.com/roquerodrigo/ha-midea-dishwasher/releases/latest).
+2. Extract it into `config/custom_components/midea_dishwasher/`.
+3. Restart Home Assistant.
+<!-- ha-marketplace:exclude-end -->
+
+## Configuration
+
+Go to **Settings → Devices & services → Add integration**, search for
+**Midea Dishwasher** and fill in the form.
+
+| Field       | What to enter                                              | Default |
+|-------------|------------------------------------------------------------|---------|
+| IP address  | The address of the dishwasher on your network              |         |
+| Port        | The dishwasher's local port, from 1 to 65535               | 6444    |
+| Device ID   | The dishwasher's numeric ID                                |         |
+| Token (hex) | The token, 128 hexadecimal characters                      |         |
+| Key (hex)   | The key, 64 hexadecimal characters                         |         |
+
+Home Assistant connects to the dishwasher before saving, so a wrong address or
+wrong credentials are reported right away. Give the dishwasher a fixed IP
+address in your router, otherwise it can stop answering after a router
+restart.
+
+To change any of these later, open the integration and select
+**Reconfigure**. If the dishwasher stops accepting the token and key, Home
+Assistant asks you for new ones. In both cases the device ID must stay the
+same: you cannot point an existing entry at another dishwasher.
+
+### Getting the token and key
+
+The token and key are issued by Midea's cloud for your dishwasher, and
+Home Assistant cannot fetch them for you. Community tools that sign in with
+your Midea app account can read them, for example
+[msmart-ng](https://github.com/mill1000/midea-msmart) and
+[midea-beautiful-air](https://github.com/nbogojevic/midea-beautiful-air).
+These tools were written for Midea air conditioners, so check that the one you
+choose lists your dishwasher, and follow its instructions. With
+midea-beautiful-air, for example:
+
+```bash
+midea-beautiful-air-cli discover --account YOUR_EMAIL --password YOUR_PASSWORD --credentials
+```
+
+Copy the device ID shown next to the token and key as well.
+
+## Options
+
+Open the integration and select **Configure**.
+
+| Setting                    | Default | Range           | Effect                                     |
+|----------------------------|---------|-----------------|--------------------------------------------|
+| Polling interval (seconds) | 30      | 10 or more      | How often Home Assistant reads the dishwasher |
+
+The integration reloads when you save the options.
 
 ## Entities
 
-| Domain | Key | Source field | Notes |
-|---|---|---|---|
-| `switch` | `power` | `machine_state` | `power_on` / `power_off` |
-| `binary_sensor` | `door` | `door_closed` (inverted) | device class `door` |
-| `binary_sensor` | `extra_drying` | `extra_drying` | flag of the running cycle |
-| `binary_sensor` | `rinse_aid` | `bright_lack` | device class `problem`, diagnostic |
-| `binary_sensor` | `salt` | `softwater_lack` | device class `problem`, diagnostic |
-| `sensor` | `status` | `cycle_state` | enum (`power_off`, `idle`, `order`, `work`, `error`, `soft_gear`) |
-| `sensor` | `progress` | `wash_stage` | enum (`idle`, `pre_wash`, `main_wash`, `rinse`, `dry`, `finish`) |
-| `sensor` | `mode` | `mode` | enum (14 programs: `auto`, `eco`, `intensive`, `90min`, `1hour`, `rapid`, …) |
-| `sensor` | `time_remaining` | `left_time` | duration, minutes |
-| `sensor` | `cycle_progress` | `left_time` | percentage elapsed, `unknown` outside a running cycle |
-| `sensor` | `temperature` | `temperature` | tub water temperature, °C |
-| `sensor` | `error` | `error_code` | enum (`none`, `water_supply`, `heating`, `overflow`, `water_valve`), diagnostic |
-| `number` | `bright` | `bright` | rinse-aid dosage 1–5 (slider) |
-| `button` | `start_eco` | — | starts ECO cycle |
-| `button` | `start_intensive` | — | starts Intensive cycle (extra-drying ON) |
-| `button` | `cancel` | — | cancels the running cycle |
+All entities belong to one device, **Dishwasher**.
 
-`cycle_progress` is derived: the device reports only the minutes left, so the cycle duration is the longest `left_time` seen since the cycle started (restored across restarts) and the percentage is how much of it has already elapsed.
+### Sensors
 
-For more flexible automations the integration also exposes the `midea_dishwasher.start_cycle` service, which accepts `mode` (any of the 14 programs above) and `extra_drying` (bool).
+| Entity         | Type          | Shows                                                                 |
+|----------------|---------------|-----------------------------------------------------------------------|
+| Status         | Sensor        | Power off, Idle, Scheduled, Running, Error or Soft gear               |
+| Program        | Sensor        | The running program (see the list under Actions)                      |
+| Progress       | Sensor        | Idle, Pre-wash, Main wash, Rinse, Dry or Finish                       |
+| Time remaining | Sensor        | Time left in the cycle                                                |
+| Cycle progress | Sensor        | Percentage of the cycle already done, empty when no cycle is running |
+| Temperature    | Sensor        | Water temperature in the tub, in °C                                   |
+| Error code     | Sensor        | None, Water supply, Heating, Overflow or Water valve. Diagnostic      |
+| Door           | Binary sensor | Open or Closed                                                        |
+| Extra drying   | Binary sensor | On when the current cycle includes extra drying                       |
+| Rinse aid      | Binary sensor | Problem when the rinse aid has run out. Diagnostic                    |
+| Salt           | Binary sensor | Problem when the dishwasher salt has run out. Diagnostic              |
 
-## Obtaining `token` and `key`
+### Controls
 
-`token` (128 hex chars) and `key` (64 hex chars) are device-specific credentials issued by the Midea cloud. The library does not extract them — use one of the existing tools tied to your Midea account:
+| Entity                | Type   | Does                                                    |
+|-----------------------|--------|---------------------------------------------------------|
+| Power                 | Switch | Turns the dishwasher on or off                          |
+| Rinse-aid level       | Number | Sets the rinse aid dose, from 1 to 5                    |
+| Start ECO cycle       | Button | Starts the ECO program without extra drying             |
+| Start intensive cycle | Button | Starts the Intensive program with extra drying          |
+| Cancel cycle          | Button | Cancels the running cycle                               |
 
-- [`midea-msmart`](https://github.com/mill1000/midea-msmart) — `midea-discover login`
-- [`midea-beautiful-air`](https://github.com/nbogojevic/midea-beautiful-air) — `midea-beautiful-air-cli`
-- The **MideaAir** mobile app extraction route described in those projects' docs
+The dishwasher only reports the minutes left. Cycle progress takes the longest
+time remaining seen since the cycle started as the length of the cycle, and
+keeps it across Home Assistant restarts. The entity also shows that length in
+its `cycle_total_minutes` attribute.
 
-Once you have them, paste into the integration's setup form alongside the dishwasher's IP and `device_id`.
+## Actions
 
-## Useful commands
+### Start cycle (`midea_dishwasher.start_cycle`)
 
-```bash
-scripts/setup      # install dependencies (uv sync with the dev and lint groups)
-scripts/develop    # start Home Assistant in debug mode with the integration loaded
-scripts/lint       # format, lint, type-check and test in one go
-uv run ruff format .                              # format
-uv run ruff check . --fix                         # lint (autofix)
-uv run mypy custom_components/midea_dishwasher     # type-check
-uv run pytest      # run tests with the 90 % coverage gate
+Starts any program, with or without extra drying.
+
+| Field             | Required | What it does                                       |
+|-------------------|----------|----------------------------------------------------|
+| `config_entry_id` | Yes      | The dishwasher to control. Pick it from the list in the action editor |
+| `mode`            | Yes      | The program to run, from the list below             |
+| `extra_drying`    | No       | Add extra drying at the end of the cycle. Default `false` |
+
+| `mode`      | Program     |
+|-------------|-------------|
+| `auto`      | Auto        |
+| `intensive` | Intensive   |
+| `normal`    | Normal      |
+| `eco`       | ECO         |
+| `glass`     | Glassware   |
+| `90min`     | 90 minutes  |
+| `1hour`     | 1 hour      |
+| `rapid`     | Rapid       |
+| `soak`      | Pre-rinse   |
+| `3in1`      | 3-in-1      |
+| `hygiene`   | Hygiene     |
+| `quiet`     | Quiet       |
+| `party`     | Party       |
+| `fruit`     | Fruits      |
+
+```yaml
+action: midea_dishwasher.start_cycle
+data:
+  config_entry_id: YOUR_CONFIG_ENTRY_ID
+  mode: eco
+  extra_drying: true
 ```
 
-HA runs with config in `config/` and `PYTHONPATH` pointing at `custom_components/` — no symlinks. To recreate entity/device IDs during development:
+If the dishwasher does not accept the command, the action fails with an error
+that you can see in the automation trace.
 
-```bash
-rm config/.storage/core.entity_registry config/.storage/core.device_registry
-```
+## How it works
 
-## Layout
+Home Assistant reads the dishwasher over your local network every polling
+interval, 30 seconds by default. The token and key come from Midea's cloud
+once, during setup. After that, everything stays on your local network.
 
-```
-custom_components/midea_dishwasher/
-├── __init__.py             # async_setup (actions) / setup_entry / unload / reload
-├── api.py                  # MideaDishwasherApiClient (executor-wrapped LAN client)
-├── binary_sensor/          # door, extra_drying, rinse_aid, salt (one class per file)
-├── brand/                  # icon/logo for HACS
-├── button/                 # cancel, start_eco, start_intensive
-├── config_flow.py          # user / reauth / reconfigure steps
-├── const.py                # DOMAIN, LOGGER, defaults, hex-length constants
-├── coordinator.py          # DataUpdateCoordinator polling the device
-├── data/                   # one file per TypedDict + the runtime dataclass
-├── device_command.py       # shared command wrapper raising translated errors
-├── diagnostics.py          # downloadable diagnostics with credential redaction
-├── entity.py               # base CoordinatorEntity
-├── exceptions/             # one file per exception class
-├── labels.py               # enum labels derived from the library
-├── manifest.json
-├── number.py               # rinse-aid level slider
-├── options_flow.py         # OptionsFlow with scan_interval
-├── quality_scale.yaml      # HA quality-scale self-assessment
-├── repairs.py              # Repair platform: unreachable_device issue + fix flow
-├── sensor/                 # status, progress, cycle_progress, mode, time_remaining, error, temperature
-├── services.py             # midea_dishwasher.start_cycle
-├── services.yaml
-├── switch.py               # power
-└── translations/
-    ├── en.json
-    └── pt-BR.json
-```
+After a button, the switch, the rinse aid level or the action sends a command,
+Home Assistant reads the dishwasher again so the entities catch up. The
+dishwasher can take a few seconds to show the change.
 
-The "one top-level class per file" rule (with related classes grouped under a directory) is documented in [`CODE_STYLE.md`](./CODE_STYLE.md).
+If three updates in a row fail to reach the dishwasher, a **Dishwasher is
+unreachable** notice appears under **Settings → System → Repairs**. It goes
+away on its own as soon as the dishwasher answers again.
 
-## Pre-commit hooks
+## Troubleshooting
 
-Install once per clone (after `scripts/setup`):
+**Setup says the token must be 128 hex chars and the key 64.** The token or
+the key is incomplete or contains characters other than 0 to 9 and a to f.
+Copy them again from the tool you used.
 
-```bash
-pre-commit install
-```
+**Setup says the dishwasher rejected the token/key.** The token and key do not
+belong to this dishwasher, or they are no longer valid. Read them again from
+your Midea account. Check that the device ID matches the dishwasher at that IP
+address.
 
-This wires ruff, mypy and basic file hygiene checks (`.pre-commit-config.yaml`) into every commit. The ruff and mypy hooks are local `uv run` hooks, so they use the exact tool versions pinned in `pyproject.toml` — the same ones CI runs.
+**Setup says it is unable to reach the dishwasher.** Check that the dishwasher
+is on, connected to Wi-Fi, and that the IP address and port are right.
 
-## CI
+**A Dishwasher is unreachable notice appears.** The dishwasher is off, out of
+the network, or its IP address changed. Fix the address with **Reconfigure**
+and give it a fixed IP address in your router.
 
-- **`ci.yml`** — lint (ruff + mypy) and tests with the coverage gate through the shared reusable workflows in [`roquerodrigo/workflows`](https://github.com/roquerodrigo/workflows), and the Home Assistant Marketplace validation of [Home Assistant Autopilot](https://github.com/marketplace/actions/home-assistant-autopilot)
-- **`release.yml`** — [Release Autopilot](https://github.com/marketplace/actions/release-autopilot) cuts a release PR from conventional commits and tags releases on merge
-- **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
+**Reconfigure says the credentials belong to a different dishwasher.** The
+device ID you entered is not the one of this entry. Add the other dishwasher as
+a new entry instead.
+
+**Something else is wrong.** Enable debug logging from the integration's menu,
+reproduce the problem, then download the diagnostics and attach both to an
+[issue](https://github.com/roquerodrigo/ha-midea-dishwasher/issues). The
+token, the key and the device ID are removed from the diagnostics file.
+
+## Known limitations
+
+- Home Assistant cannot get the token and key from Midea's cloud. You read
+  them once with another tool.
+- The dishwasher serves one connection at a time. A command can fail if the
+  dishwasher is busy answering another request. Try it again.
+- Cycle progress is an estimate. If Home Assistant first sees a cycle when it
+  is already under way, the percentage counts from that moment.
 
 ## Support
 
-This integration is built and maintained on personal time, on hardware bought for the purpose. If it is useful to you, consider [sponsoring the work](https://github.com/sponsors/roquerodrigo) — it keeps the devices, the testing and the releases coming.
+This integration is built and maintained on personal time, on hardware bought
+for the purpose. If it is useful to you, consider
+[sponsoring the work](https://github.com/sponsors/roquerodrigo). It keeps the
+devices, the testing and the releases coming.
 
-## Credits
+<!-- ha-marketplace:exclude-start -->
+## Contributing
 
-This repository was bootstrapped from [`ludeeus/integration_blueprint`](https://github.com/ludeeus/integration_blueprint) and the [`@roquerodrigo`](https://github.com/roquerodrigo) HACS template that lives at [`roquerodrigo/ha-integration-blueprint`](https://github.com/roquerodrigo/ha-integration-blueprint). The LAN V3 + AA codec implementation lives in the standalone [`midea-dishwasher-api`](https://github.com/roquerodrigo/midea-dishwasher-api) package.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup and
+workflow, and [CODE_STYLE.md](CODE_STYLE.md) for the code conventions.
 
 ## License
 
 [MIT](LICENSE)
+<!-- ha-marketplace:exclude-end -->
